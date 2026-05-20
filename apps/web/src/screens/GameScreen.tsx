@@ -7,6 +7,8 @@ import { HandArea } from '../components/game/HandArea.js';
 import { ActionButtons } from '../components/game/ActionButtons.js';
 import { BetControls } from '../components/game/BetControls.js';
 import { CardRenderer } from '../components/game/CardRenderer.js';
+import { DeckStack } from '../components/game/DeckStack.js';
+import { DeckSelector } from '../components/lobby/DeckSelector.js';
 import { clearRoom } from '../lib/gameContext.js';
 import { handValue } from '@blackjack/game-core';
 
@@ -22,6 +24,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   const [turnInfo, setTurnInfo] = useState<any>(null);
   const [roundResult, setRoundResult] = useState<any>(null);
   const [bankrollOverride, setBankrollOverride] = useState<number | null>(null);
+  const [showDeckSelector, setShowDeckSelector] = useState(false);
   const prevActiveSeatRef = React.useRef<number>(-1);
 
   useEffect(() => {
@@ -204,7 +207,55 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
         padding: '1rem',
         minHeight: 0,
         overflow: 'auto',
+        position: 'relative',
       }}>
+        {/* Deck visual indicator */}
+        <div style={{
+          position: 'absolute',
+          top: '0.5rem',
+          right: '0.5rem',
+          zIndex: 10,
+        }}>
+          <div
+            onClick={() => myPlayer?.isHost && setShowDeckSelector(!showDeckSelector)}
+            style={{ cursor: myPlayer?.isHost ? 'pointer' : 'default', position: 'relative' }}
+            title={myPlayer?.isHost ? 'Click to change deck count (applies next round)' : `${state.numDecks} ${state.numDecks === 1 ? 'Deck' : 'Decks'}`}
+          >
+            <DeckStack numDecks={state.numDecks ?? 2} />
+          </div>
+
+          {/* Deck selector popover for host */}
+          {showDeckSelector && myPlayer?.isHost && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              right: 0,
+              marginTop: '0.5rem',
+              background: 'var(--surface-card)',
+              borderRadius: '12px',
+              padding: '0.75rem',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+              zIndex: 20,
+            }}>
+              <div style={{
+                fontSize: '0.625rem',
+                color: 'rgba(255,255,255,0.5)',
+                marginBottom: '0.5rem',
+              }}>
+                Changes apply next round
+              </div>
+              <DeckSelector
+                numDecks={state.numDecks ?? 2}
+                isHost={true}
+                onChange={(numDecks) => {
+                  room?.send('change-decks', { numDecks });
+                  setShowDeckSelector(false);
+                }}
+              />
+            </div>
+          )}
+        </div>
+
         {/* Dealer */}
         <DealerArea
           cards={dealerCards}
