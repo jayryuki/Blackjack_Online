@@ -150,6 +150,16 @@ export class BlackjackRoom extends Room<GameState> {
     this.internalState.delete(client.sessionId);
     this.state.players.delete(client.sessionId);
 
+    // Transfer host ownership if the leaving player was host
+    if (client.sessionId === this.state.hostPlayerId) {
+      const remainingPlayers = Array.from(this.state.players.values());
+      if (remainingPlayers.length > 0) {
+        const newHost = remainingPlayers[0];
+        this.state.hostPlayerId = newHost.playerId;
+        newHost.isHost = true;
+      }
+    }
+
     // If it was this player's turn, advance to the next player
     if (this.gamePhase.type === 'PLAYER_TURN' && seat === this.activeSeat) {
       this.startNextPlayerTurn();
