@@ -95,7 +95,12 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
         setRoundResult(null);
         setBankrollOverride(null);
       }
-      setTurnInfo(null);
+      // Only clear turnInfo when moving AWAY from PLAYER_TURN (not into it),
+      // to avoid clobbering turnInfo set by the 'your-turn' message that
+      // arrives before the state patch (race condition between direct msg and state sync)
+      if (prevPhaseRef.current === 'PLAYER_TURN') {
+        setTurnInfo(null);
+      }
       prevPhaseRef.current = currentPhase;
     }
   }, [currentPhase]);
