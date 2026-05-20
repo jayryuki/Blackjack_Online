@@ -102,7 +102,8 @@ export class BlackjackRoom extends Room<GameState> {
 
     this.onMessage('change-decks', (client, data: { numDecks: number }) => {
       // Only host can change decks
-      if (client.sessionId !== this.state.hostPlayerId) return;
+      const player = this.state.players.get(client.sessionId);
+      if (!player || !player.isHost) return;
 
       // Validate deck count
       const validDecks = [1, 2, 4, 6];

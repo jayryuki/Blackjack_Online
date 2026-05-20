@@ -64,7 +64,7 @@ export function LobbyScreen() {
 
       {error && <div style={{ color: 'var(--danger)', marginBottom: '0.5rem', flexShrink: 0 }}>{error}</div>}
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem', minHeight: 0, overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem', minHeight: 0, overflowY: 'auto' }}>
         <SeatMap players={players} myPlayerId={mySessionId} maxSeats={7} onChooseSeat={(idx) => room?.send('choose-seat', { seatIndex: idx })} />
 
         <div>
