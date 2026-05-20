@@ -5,6 +5,7 @@ import { ThemeToggle } from '../components/common/ThemeToggle.js';
 import { SeatMap } from '../components/lobby/SeatMap.js';
 import { PlayerList } from '../components/lobby/PlayerList.js';
 import { RulesSummary } from '../components/lobby/RulesSummary.js';
+import { DeckSelector } from '../components/lobby/DeckSelector.js';
 import { ChatPanel } from '../components/lobby/ChatPanel.js';
 import { useGameClient } from '../hooks/useGameClient.js';
 import { setRoom, clearRoom } from '../lib/gameContext.js';
@@ -72,6 +73,14 @@ export function LobbyScreen() {
 
         <div>
           <RulesSummary />
+        </div>
+
+        <div>
+          <DeckSelector
+            numDecks={state?.numDecks ?? 2}
+            isHost={isHost}
+            onChange={(numDecks) => room?.send('change-decks', { numDecks })}
+          />
         </div>
 
         <div style={{ flex: 1, minHeight: 0 }}>
