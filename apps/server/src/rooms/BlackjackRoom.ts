@@ -99,6 +99,18 @@ export class BlackjackRoom extends Room<GameState> {
         this.state.chatMessages.shift();
       }
     });
+
+    this.onMessage('change-decks', (client, data: { numDecks: number }) => {
+      // Only host can change decks
+      if (client.sessionId !== this.state.hostPlayerId) return;
+
+      // Validate deck count
+      const validDecks = [1, 2, 4, 6];
+      if (!validDecks.includes(data.numDecks)) return;
+
+      // Update numDecks immediately (syncs to all clients)
+      this.state.numDecks = data.numDecks;
+    });
   }
 
   onJoin(client: Client, options: { displayName: string }) {
