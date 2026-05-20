@@ -8,6 +8,7 @@ import {
   createDeck,
   shuffleDeck,
   drawCard,
+  shouldReshuffle,
   handValue,
   createHand,
   addCardToHand,
@@ -371,9 +372,24 @@ export class BlackjackRoom extends Room<GameState> {
       }
     }
 
-    // Create and shuffle deck
-    this.deck = shuffleDeck(createDeck(this.state.numDecks), `${this.roomId}-${Date.now()}`);
+    // Check if deck needs reshuffling (or first round)
+    if (!this.deck || shouldReshuffle(this.deck)) {
+      // Show shuffling phase
+      const phase: GamePhase = { type: 'SHUFFLING' };
+      this.setPhase(phase);
+      this.syncAllPlayers();
+      this.broadcast('shuffling', {});
 
+      setTimeout(() => {
+        this.deck = shuffleDeck(createDeck(this.state.numDecks), `${this.roomId}-${Date.now()}`);
+        this.startBettingAfterShuffle();
+      }, 2000);
+    } else {
+      this.startBettingAfterShuffle();
+    }
+  }
+
+  private startBettingAfterShuffle() {
     // Set phase
     const phase: GamePhase = { type: 'BETTING' };
     this.setPhase(phase);
@@ -951,6 +967,9 @@ export class BlackjackRoom extends Room<GameState> {
       this.dealerCards.push(result.card);
       this.syncDealerCards(true);
       this.syncAllPlayers();
+    } else {
+      // Deck exhausted — reshuffle and continue
+      this.deck = shuffleDeck(createDeck(this.state.numDecks), `${this.roomId}-${Date.now()}`);
     }
 
     // Continue drawing with delay

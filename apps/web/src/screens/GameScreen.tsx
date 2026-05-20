@@ -25,6 +25,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   const [roundResult, setRoundResult] = useState<any>(null);
   const [bankrollOverride, setBankrollOverride] = useState<number | null>(null);
   const [showDeckSelector, setShowDeckSelector] = useState(false);
+  const [lastBet, setLastBet] = useState<number | null>(null);
   const prevActiveSeatRef = React.useRef<number>(-1);
 
   useEffect(() => {
@@ -119,6 +120,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   }, [activeSeat]);
 
   const handlePlaceBet = useCallback((amount: number) => {
+    setLastBet(amount);
     room?.send('place-bet', { amount });
   }, [room]);
 
@@ -155,6 +157,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   const isMyTurn = turnInfo && turnInfo.canHit !== undefined && activeSeat === myPlayer?.seatIndex;
   const effectiveBankroll = bankrollOverride ?? (myPlayer?.bankroll || 1000);
 
+  const showShuffling = currentPhase === 'SHUFFLING';
   const showBetControls = currentPhase === 'BETTING' && !myPlayer?.hasBet;
   const showWaitingForBet = currentPhase === 'BETTING' && myPlayer?.hasBet;
   const showActions = currentPhase === 'PLAYER_TURN' && isMyTurn;
@@ -388,6 +391,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
             maxBet={state.maxBet || 500}
             bankroll={effectiveBankroll}
             onPlaceBet={handlePlaceBet}
+            initialBet={lastBet ?? state.minBet}
           />
         )}
 
@@ -400,6 +404,20 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
             padding: '0.75rem',
           }}>
             Bet placed. Waiting for other players...
+          </div>
+        )}
+
+        {/* Shuffling indicator */}
+        {showShuffling && (
+          <div style={{
+            textAlign: 'center',
+            color: 'rgba(255,255,255,0.6)',
+            fontSize: '1rem',
+            fontWeight: 600,
+            padding: '1rem',
+            animation: 'fadeInOut 2s ease-in-out infinite',
+          }}>
+            Shuffling...
           </div>
         )}
 

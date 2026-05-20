@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../common/Button.js';
 import { ChipRenderer } from './ChipRenderer.js';
 
@@ -7,18 +7,23 @@ interface BetControlsProps {
   maxBet: number;
   bankroll: number;
   onPlaceBet: (amount: number) => void;
+  initialBet?: number;
 }
 
 const CHIP_VALUES = [5, 10, 25, 50, 100];
 
-export function BetControls({ minBet, maxBet, bankroll, onPlaceBet }: BetControlsProps) {
-  const [betAmount, setBetAmount] = useState(minBet);
+export function BetControls({ minBet, maxBet, bankroll, onPlaceBet, initialBet }: BetControlsProps) {
+  const [betAmount, setBetAmount] = useState(initialBet ?? minBet);
+
+  useEffect(() => {
+    setBetAmount(initialBet ?? minBet);
+  }, [initialBet, minBet]);
 
   const addChip = (value: number) => {
     setBetAmount((prev) => Math.min(prev + value, maxBet, bankroll));
   };
 
-  const clearBet = () => setBetAmount(minBet);
+  const clearBet = () => setBetAmount(0);
 
   return (
     <div style={{
