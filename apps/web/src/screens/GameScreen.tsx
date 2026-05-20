@@ -105,9 +105,11 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
     }
   }, [currentPhase]);
 
-  // Clear turnInfo when the active seat changes (someone else's turn now)
+  // Clear turnInfo when the active seat changes between real players (someone else's turn now).
+  // Don't clear when transitioning from 255 (no active seat during DEALING) to a real seat,
+  // because that's the first player's turn and the your-turn message sets turnInfo.
   useEffect(() => {
-    if (prevActiveSeatRef.current !== -1 && prevActiveSeatRef.current !== activeSeat) {
+    if (prevActiveSeatRef.current !== -1 && prevActiveSeatRef.current !== 255 && prevActiveSeatRef.current !== activeSeat) {
       setTurnInfo(null);
     }
     prevActiveSeatRef.current = activeSeat;
