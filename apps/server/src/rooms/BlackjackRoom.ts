@@ -57,7 +57,7 @@ export class BlackjackRoom extends Room<GameState> {
     this.state.hostPlayerId = options.hostPlayerId;
     this.state.status = 'lobby';
     this.state.phase = 'LOBBY';
-    this.state.numDecks = 6;
+    this.state.numDecks = 2;
     this.state.minBet = 10;
     this.state.maxBet = 500;
 
