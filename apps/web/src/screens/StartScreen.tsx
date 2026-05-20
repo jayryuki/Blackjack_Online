@@ -28,7 +28,7 @@ export function StartScreen() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('/api/rooms')
+    fetch('/api/rooms?game=blackjack')
       .then(res => res.ok ? res.json() : [])
       .then(data => setRooms(data))
       .catch(() => {});
@@ -42,7 +42,7 @@ export function StartScreen() {
       const res = await fetch('/api/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayName: name, preset: 'standard' }),
+        body: JSON.stringify({ displayName: name, preset: 'standard', game: 'blackjack' }),
       });
       const data = await res.json();
       navigate(`/lobby/${data.roomCode}?roomId=${data.roomId}&name=${encodeURIComponent(name)}`);
@@ -61,6 +61,10 @@ export function StartScreen() {
         return;
       }
       const data = await res.json();
+      if (data.game !== 'blackjack') {
+        setError('That room is not a blackjack game');
+        return;
+      }
       navigate(`/lobby/${joinCode.toUpperCase()}?roomId=${data.roomId}&name=${encodeURIComponent(name)}`);
     } catch {
       setError('Failed to connect');

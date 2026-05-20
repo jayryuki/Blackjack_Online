@@ -14,7 +14,7 @@ export function CreateRoomScreen() {
       const res = await fetch('/api/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayName, preset: 'standard' }),
+        body: JSON.stringify({ displayName, preset: 'standard', game: 'blackjack' }),
       });
       const data = await res.json();
       navigate(`/lobby/${data.roomCode}?roomId=${data.roomId}&name=${encodeURIComponent(displayName)}`);

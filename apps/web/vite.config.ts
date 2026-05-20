@@ -7,8 +7,8 @@ export default defineConfig({
     port: 3501,
     host: '0.0.0.0',
     proxy: {
-      '/api': 'http://localhost:3500',
-      '/ws': { target: 'ws://localhost:3500', ws: true },
+      '/api': 'http://localhost:2500',
+      '/ws': { target: 'ws://localhost:2500', ws: true },
     },
   },
 });
