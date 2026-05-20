@@ -139,6 +139,19 @@ export class BlackjackRoom extends Room<GameState> {
       currentBet: 0,
       hasBet: false,
     });
+
+    // If joining during BETTING phase, send bet prompt to new player
+    if (this.state.phase === 'BETTING') {
+      const internal = this.internalState.get(client.sessionId);
+      if (internal && !internal.hasBet) {
+        client.send('place-your-bet', {
+          minBet: this.state.minBet,
+          maxBet: this.state.maxBet,
+        });
+        // Re-check after a tick to allow state to sync
+        this.clock.setTimeout(() => this.checkAllBetsPlaced(), 100);
+      }
+    }
   }
 
   onLeave(client: Client) {
