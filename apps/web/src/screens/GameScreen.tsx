@@ -26,7 +26,6 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   const [bankrollOverride, setBankrollOverride] = useState<number | null>(null);
   const [showDeckSelector, setShowDeckSelector] = useState(false);
   const [lastBet, setLastBet] = useState<number | null>(null);
-  const prevActiveSeatRef = React.useRef<number>(-1);
 
   useEffect(() => {
     if (!room) return;
@@ -109,15 +108,20 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
     }
   }, [currentPhase]);
 
-  // Clear turnInfo when the active seat changes between real players (someone else's turn now).
-  // Don't clear when transitioning from 255 (no active seat during DEALING) to a real seat,
-  // because that's the first player's turn and the your-turn message sets turnInfo.
+  // Derive my seat index from state for use in effects (before myPlayer is declared)
+  const mySeatIndex: number | undefined = (state?.players as any[] | undefined)?.find(
+    (p: any) => p.playerId === mySessionId
+  )?.seatIndex;
+
+  // Clear turnInfo when it's no longer our turn.
+  // We only clear when the active seat moves to someone else (not our seat),
+  // to avoid clobbering turnInfo from the 'your-turn' direct message that
+  // can arrive in the same render cycle as the state patch.
   useEffect(() => {
-    if (prevActiveSeatRef.current !== -1 && prevActiveSeatRef.current !== 255 && prevActiveSeatRef.current !== activeSeat) {
+    if (activeSeat !== 255 && mySeatIndex !== undefined && activeSeat !== mySeatIndex) {
       setTurnInfo(null);
     }
-    prevActiveSeatRef.current = activeSeat;
-  }, [activeSeat]);
+  }, [activeSeat, mySeatIndex]);
 
   const handlePlaceBet = useCallback((amount: number) => {
     setLastBet(amount);

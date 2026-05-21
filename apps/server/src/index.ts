@@ -2,13 +2,21 @@ import { Server, matchMaker } from '@colyseus/core';
 import { WebSocketTransport } from '@colyseus/ws-transport';
 import { createServer } from 'http';
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { BlackjackRoom } from './rooms/BlackjackRoom.js';
 import { RoomCodeService } from './services/RoomCodeService.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const webDist = path.resolve(__dirname, '../../web/dist');
 
 const getLocalRoomById = (matchMaker as any).getLocalRoomById.bind(matchMaker) as (roomId: string) => BlackjackRoom | undefined;
 
 const app = express();
 app.use(express.json());
+
+// Serve web frontend
+app.use(express.static(webDist));
 
 const server = createServer(app);
 const transport = new WebSocketTransport({ server });
@@ -32,7 +40,7 @@ app.post('/api/rooms', async (req, res) => {
     });
 
     roomCodeService.register(roomCode, room.roomId);
-    res.json({ roomCode, roomId: room.roomId, hostPlayerId });
+    res.json({ roomCode, roomId: room.roomId, hostPlayerId, game: 'blackjack' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to create room' });
   }
@@ -61,6 +69,7 @@ app.get('/api/rooms', async (_req, res) => {
         result.push({
           roomId,
           roomCode: code,
+          game: 'blackjack',
           hostName,
           playerCount: room.clients.length,
           maxPlayers: room.maxClients,
@@ -90,10 +99,15 @@ app.get('/api/rooms', async (_req, res) => {
 app.get('/api/rooms/:code', (req, res) => {
   const roomId = roomCodeService.getRoomId(req.params.code);
   if (roomId) {
-    res.json({ roomId, exists: true });
+    res.json({ roomId, exists: true, game: 'blackjack' });
   } else {
     res.status(404).json({ error: 'Room not found' });
   }
+});
+
+// SPA catch-all: serve index.html for all non-API routes (React Router)
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(webDist, 'index.html'));
 });
 
 const PORT: number = parseInt(process.env.PORT || '3500', 10);

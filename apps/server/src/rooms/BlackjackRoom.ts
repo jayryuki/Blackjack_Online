@@ -406,21 +406,38 @@ export class BlackjackRoom extends Room<GameState> {
     // Set phase
     const phase: GamePhase = { type: 'BETTING' };
     this.setPhase(phase);
+
+    // Auto-bet $0 for players with insufficient bankroll (they sit out this round)
+    for (const [sessionId, internal] of this.internalState) {
+      if (internal.bankroll < this.state.minBet && !internal.hasBet) {
+        internal.currentBet = 0;
+        internal.hasBet = true;
+        this.syncPlayerState(sessionId);
+      }
+    }
+
     this.syncAllPlayers();
 
     // Notify human players to place bets
     const occupied = this.getOccupiedSeats();
     for (const seat of occupied) {
       if (!this.isBot(seat)) {
-        const client = this.getClientForSeat(seat);
-        if (client) {
-          client.send('place-your-bet', {
-            minBet: this.state.minBet,
-            maxBet: this.state.maxBet,
-          });
+        const sessionId = this.seatToSession.get(seat);
+        const internal = sessionId ? this.internalState.get(sessionId) : null;
+        if (internal && !internal.hasBet) {
+          const client = this.getClientForSeat(seat);
+          if (client) {
+            client.send('place-your-bet', {
+              minBet: this.state.minBet,
+              maxBet: this.state.maxBet,
+            });
+          }
         }
       }
     }
+
+    // If all players are already bet (e.g., all auto-skipped), deal immediately
+    this.checkAllBetsPlaced();
   }
 
   private handlePlaceBet(client: Client, data: { amount: number }) {
@@ -467,10 +484,11 @@ export class BlackjackRoom extends Room<GameState> {
 
     const occupied = this.getOccupiedSeats();
 
-    // Deduct bets and create hands
+    // Deduct bets and create hands (skip players with $0 bet who sat out)
     for (const seat of occupied) {
       const sessionId = this.seatToSession.get(seat)!;
       const internal = this.internalState.get(sessionId)!;
+      if (internal.currentBet === 0) continue;
       internal.bankroll -= internal.currentBet;
       internal.hands = [{
         cards: [],
@@ -483,8 +501,13 @@ export class BlackjackRoom extends Room<GameState> {
       }];
     }
 
-    // Deal cards one at a time with delays
-    this.dealCardSequence(occupied, 0);
+    // Deal cards one at a time with delays (only to players who placed a bet)
+    const activePlayers = occupied.filter((seat) => {
+      const sessionId = this.seatToSession.get(seat)!;
+      const internal = this.internalState.get(sessionId)!;
+      return internal.currentBet > 0;
+    });
+    this.dealCardSequence(activePlayers, 0);
   }
 
   private dealCardSequence(occupied: number[], cardIndex: number) {
@@ -607,87 +630,78 @@ export class BlackjackRoom extends Room<GameState> {
     const occupied = this.getOccupiedSeats();
     console.log(`[NextTurn] occupied seats: [${occupied.join(', ')}] activeSeat=${this.activeSeat}`);
 
-    // Find next seat that still has a playing hand
-    while (true) {
-      // Find the first seat with an active hand
-      let found = false;
-      for (const seat of occupied) {
-        const sessionId = this.seatToSession.get(seat);
-        if (!sessionId) {
-          console.log(`[NextTurn] WARNING: seat=${seat} has no session, skipping`);
-          continue;
-        }
-        const internal = this.internalState.get(sessionId);
-        if (!internal) {
-          console.log(`[NextTurn] WARNING: seat=${seat} sessionId=${sessionId} has no internal state, skipping`);
-          continue;
-        }
-
-        for (let hi = 0; hi < internal.hands.length; hi++) {
-          const hand = internal.hands[hi];
-          if (hand.status === 'playing') {
-            this.activeSeat = seat;
-            this.activeHandIndex = hi;
-
-            const availableBankroll = this.getAvailableBankroll(internal, hi);
-            const phase: GamePhase = {
-              type: 'PLAYER_TURN',
-              activeSeat: seat,
-              handIndex: hi,
-              canHit: canHit(hand),
-              canStand: true,
-              canDouble: canDouble(hand, availableBankroll),
-              canSplit: canSplit(hand, availableBankroll),
-              canSurrender: canSurrender(hand),
-            };
-            this.setPhase(phase);
-            this.syncAllPlayers();
-
-            console.log(`[NextTurn] Found playing hand: seat=${seat} handIndex=${hi} sessionId=${sessionId}`);
-
-            if (this.isBot(seat)) {
-              this.scheduleBotAction(seat);
-            } else {
-              const client = this.getClientForSeat(seat);
-              if (client) {
-                console.log(`[NextTurn] Sending your-turn to seat=${seat} client=${client.sessionId}`);
-                client.send('your-turn', {
-                  seat,
-                  handIndex: hi,
-                  canHit: canHit(hand),
-                  canStand: true,
-                  canDouble: canDouble(hand, availableBankroll),
-                  canSplit: canSplit(hand, availableBankroll),
-                  canSurrender: canSurrender(hand),
-                });
-                // Set turn timer — auto-stand after 30 seconds
-                this.turnTimer = setTimeout(() => {
-                  if (this.gamePhase.type === 'PLAYER_TURN' && this.activeSeat === seat) {
-                    const sId = this.seatToSession.get(seat);
-                    const intState = sId ? this.internalState.get(sId) : null;
-                    if (intState && intState.hands[hi]?.status === 'playing') {
-                      intState.hands[hi].status = 'standing';
-                      this.advanceHandOrNextPlayer(seat, sId!);
-                    }
-                  }
-                }, 30000);
-              } else {
-                console.log(`[NextTurn] WARNING: No client found for seat=${seat}`);
-              }
-            }
-            found = true;
-            break;
-          }
-        }
-        if (found) break;
+    // Find the first seat with an active hand
+    for (const seat of occupied) {
+      const sessionId = this.seatToSession.get(seat);
+      if (!sessionId) {
+        console.log(`[NextTurn] WARNING: seat=${seat} has no session, skipping`);
+        continue;
+      }
+      const internal = this.internalState.get(sessionId);
+      if (!internal) {
+        console.log(`[NextTurn] WARNING: seat=${seat} sessionId=${sessionId} has no internal state, skipping`);
+        continue;
       }
 
-      if (found) break;
+      for (let hi = 0; hi < internal.hands.length; hi++) {
+        const hand = internal.hands[hi];
+        if (hand.status === 'playing') {
+          this.activeSeat = seat;
+          this.activeHandIndex = hi;
 
-      // No more playing hands — move to dealer turn
-      this.startDealerTurn();
-      return;
+          const availableBankroll = this.getAvailableBankroll(internal, hi);
+          const phase: GamePhase = {
+            type: 'PLAYER_TURN',
+            activeSeat: seat,
+            handIndex: hi,
+            canHit: canHit(hand),
+            canStand: true,
+            canDouble: canDouble(hand, availableBankroll),
+            canSplit: canSplit(hand, availableBankroll),
+            canSurrender: canSurrender(hand),
+          };
+          this.setPhase(phase);
+          this.syncAllPlayers();
+
+          console.log(`[NextTurn] Found playing hand: seat=${seat} handIndex=${hi} sessionId=${sessionId}`);
+
+          if (this.isBot(seat)) {
+            this.scheduleBotAction(seat);
+          } else {
+            const client = this.getClientForSeat(seat);
+            if (client) {
+              console.log(`[NextTurn] Sending your-turn to seat=${seat} client=${client.sessionId}`);
+              client.send('your-turn', {
+                seat,
+                handIndex: hi,
+                canHit: canHit(hand),
+                canStand: true,
+                canDouble: canDouble(hand, availableBankroll),
+                canSplit: canSplit(hand, availableBankroll),
+                canSurrender: canSurrender(hand),
+              });
+              // Set turn timer — auto-stand after 30 seconds
+              this.turnTimer = setTimeout(() => {
+                if (this.gamePhase.type === 'PLAYER_TURN' && this.activeSeat === seat) {
+                  const sId = this.seatToSession.get(seat);
+                  const intState = sId ? this.internalState.get(sId) : null;
+                  if (intState && intState.hands[hi]?.status === 'playing') {
+                    intState.hands[hi].status = 'standing';
+                    this.advanceHandOrNextPlayer(seat, sId!);
+                  }
+                }
+              }, 30000);
+            } else {
+              console.log(`[NextTurn] WARNING: No client found for seat=${seat}`);
+            }
+          }
+          return;
+        }
+      }
     }
+
+    // No more playing hands — move to dealer turn
+    this.startDealerTurn();
   }
 
   private clearTurnTimer() {
@@ -788,11 +802,11 @@ export class BlackjackRoom extends Room<GameState> {
 
       case 'DOUBLE': {
         if (!canDouble(hand, this.getAvailableBankroll(internal, handIndex))) return;
+        if (!this.deck) return;
         // Deduct the extra bet for doubling
         internal.bankroll -= hand.bet;
         hand.bet *= 2;
         hand.isDoubled = true;
-        if (!this.deck) return;
         let result = drawCard(this.deck);
         if (!result) {
           this.deck = shuffleDeck(createDeck(this.state.numDecks), `${this.roomId}-${Date.now()}`);
@@ -811,6 +825,7 @@ export class BlackjackRoom extends Room<GameState> {
 
       case 'SPLIT': {
         if (!canSplit(hand, internal.bankroll)) return;
+        if (!this.deck) return;
 
         const card1 = hand.cards[0];
         const card2 = hand.cards[1];
@@ -839,7 +854,6 @@ export class BlackjackRoom extends Room<GameState> {
         };
 
         // Draw one card for each hand (reshuffle if needed)
-        if (!this.deck) return;
         let r1 = drawCard(this.deck);
         if (!r1) {
           this.deck = shuffleDeck(createDeck(this.state.numDecks), `${this.roomId}-${Date.now()}`);
