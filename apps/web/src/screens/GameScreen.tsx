@@ -197,6 +197,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
           {roomCode}
         </div>
         <ThemeToggle />
+        <span style={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.3)', position: 'absolute', bottom: '0.25rem', right: '0.5rem' }}>v1.0.1</span>
       </div>
 
       {/* Table area */}

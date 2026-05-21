@@ -605,14 +605,23 @@ export class BlackjackRoom extends Room<GameState> {
     this.clearTurnTimer();
 
     const occupied = this.getOccupiedSeats();
+    console.log(`[NextTurn] occupied seats: [${occupied.join(', ')}] activeSeat=${this.activeSeat}`);
 
     // Find next seat that still has a playing hand
     while (true) {
       // Find the first seat with an active hand
       let found = false;
       for (const seat of occupied) {
-        const sessionId = this.seatToSession.get(seat)!;
-        const internal = this.internalState.get(sessionId)!;
+        const sessionId = this.seatToSession.get(seat);
+        if (!sessionId) {
+          console.log(`[NextTurn] WARNING: seat=${seat} has no session, skipping`);
+          continue;
+        }
+        const internal = this.internalState.get(sessionId);
+        if (!internal) {
+          console.log(`[NextTurn] WARNING: seat=${seat} sessionId=${sessionId} has no internal state, skipping`);
+          continue;
+        }
 
         for (let hi = 0; hi < internal.hands.length; hi++) {
           const hand = internal.hands[hi];
@@ -634,11 +643,14 @@ export class BlackjackRoom extends Room<GameState> {
             this.setPhase(phase);
             this.syncAllPlayers();
 
+            console.log(`[NextTurn] Found playing hand: seat=${seat} handIndex=${hi} sessionId=${sessionId}`);
+
             if (this.isBot(seat)) {
               this.scheduleBotAction(seat);
             } else {
               const client = this.getClientForSeat(seat);
               if (client) {
+                console.log(`[NextTurn] Sending your-turn to seat=${seat} client=${client.sessionId}`);
                 client.send('your-turn', {
                   seat,
                   handIndex: hi,
@@ -659,6 +671,8 @@ export class BlackjackRoom extends Room<GameState> {
                     }
                   }
                 }, 30000);
+              } else {
+                console.log(`[NextTurn] WARNING: No client found for seat=${seat}`);
               }
             }
             found = true;
@@ -696,6 +710,7 @@ export class BlackjackRoom extends Room<GameState> {
     const hand = internal.hands[this.activeHandIndex];
     if (!hand || hand.status !== 'playing') return;
 
+    console.log(`[PlayerAction] seat=${seat} action=${data.action} handIndex=${this.activeHandIndex}`);
     this.clearTurnTimer();
     this.executeAction(seat, sessionId, this.activeHandIndex, data.action);
   }
@@ -937,7 +952,14 @@ export class BlackjackRoom extends Room<GameState> {
   }
 
   private advanceHandOrNextPlayer(seat: number, sessionId: string) {
-    const internal = this.internalState.get(sessionId)!;
+    const internal = this.internalState.get(sessionId);
+    if (!internal) {
+      console.log(`[Advance] ERROR: no internal state for seat=${seat}, calling startNextPlayerTurn anyway`);
+      this.startNextPlayerTurn();
+      return;
+    }
+
+    console.log(`[Advance] seat=${seat} hands=${internal.hands.length} activeHandIndex=${this.activeHandIndex}`);
 
     // Check if there's another hand to play (from split)
     const nextHandIndex = this.activeHandIndex + 1;
