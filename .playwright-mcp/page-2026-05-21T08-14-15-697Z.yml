@@ -1,0 +1,78 @@
+- generic [ref=e24]:
+  - generic [ref=e25]:
+    - button "← Leave" [ref=e26] [cursor=pointer]
+    - generic [ref=e27]:
+      - generic [ref=e28]: 2STKQJ
+      - button "Dark" [ref=e29] [cursor=pointer]
+  - heading "Lobby" [level=1] [ref=e30]
+  - generic [ref=e31]:
+    - generic [ref=e32]:
+      - button "Seat 1 Player1" [ref=e33]:
+        - generic [ref=e34]: Seat 1
+        - generic [ref=e35]: Player1
+      - button "Seat 2 Player2" [ref=e36]:
+        - generic [ref=e37]: Seat 2
+        - generic [ref=e38]: Player2
+      - button "Seat 3 Empty" [ref=e39] [cursor=pointer]:
+        - generic [ref=e40]: Seat 3
+        - generic [ref=e41]: Empty
+      - button "Seat 4 Empty" [ref=e42] [cursor=pointer]:
+        - generic [ref=e43]: Seat 4
+        - generic [ref=e44]: Empty
+      - button "Seat 5 Empty" [ref=e45] [cursor=pointer]:
+        - generic [ref=e46]: Seat 5
+        - generic [ref=e47]: Empty
+      - button "Seat 6 Empty" [ref=e48] [cursor=pointer]:
+        - generic [ref=e49]: Seat 6
+        - generic [ref=e50]: Empty
+      - button "Seat 7 Empty" [ref=e51] [cursor=pointer]:
+        - generic [ref=e52]: Seat 7
+        - generic [ref=e53]: Empty
+    - generic [ref=e55]:
+      - generic [ref=e56]:
+        - generic [ref=e58]: Player1
+        - generic [ref=e59]: $1000
+      - generic [ref=e60]:
+        - generic [ref=e62]: Player2
+        - generic [ref=e63]: $1000
+    - generic [ref=e65]:
+      - generic [ref=e66]: Rules
+      - generic [ref=e67]:
+        - generic [ref=e68]: Variant
+        - generic [ref=e69]: Standard
+      - generic [ref=e70]:
+        - generic [ref=e71]: Decks
+        - generic [ref=e72]: "6"
+      - generic [ref=e73]:
+        - generic [ref=e74]: Dealer
+        - generic [ref=e75]: Stands on 17
+      - generic [ref=e76]:
+        - generic [ref=e77]: Blackjack
+        - generic [ref=e78]: 3:2 payout
+      - generic [ref=e79]:
+        - generic [ref=e80]: Surrender
+        - generic [ref=e81]: Allowed
+      - generic [ref=e82]:
+        - generic [ref=e83]: Double
+        - generic [ref=e84]: Any 2 cards
+      - generic [ref=e85]:
+        - generic [ref=e86]: Split
+        - generic [ref=e87]: Same rank only
+    - generic [ref=e89]:
+      - generic [ref=e90]: Number of Decks
+      - generic [ref=e91]:
+        - button "1 Deck" [disabled] [ref=e92]:
+          - generic [ref=e95]: 1 Deck
+        - button "2 Decks" [disabled] [ref=e96]:
+          - generic [ref=e100]: 2 Decks
+        - button "4 Decks" [disabled] [ref=e101]:
+          - generic [ref=e107]: 4 Decks
+        - button "6 Decks" [disabled] [ref=e108]:
+          - generic [ref=e116]: 6 Decks
+    - generic [ref=e118]:
+      - generic [ref=e119]: Chat
+      - generic [ref=e121]: No messages yet
+      - generic [ref=e122]:
+        - textbox "Type a message..." [ref=e123]
+        - button "Send" [ref=e124] [cursor=pointer]
+  - button "Ready Up" [ref=e126] [cursor=pointer]

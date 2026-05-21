@@ -1,0 +1,28 @@
+- generic [ref=e3]:
+  - heading "Blackjack" [level=1] [ref=e4]
+  - paragraph [ref=e5]: Take a seat at the table.
+  - generic [ref=e6]:
+    - generic [ref=e7]: Name
+    - textbox "Leave blank for a random name" [ref=e8]
+  - generic [ref=e9]:
+    - button "Create Room" [ref=e10] [cursor=pointer]
+    - button "Dark" [ref=e11] [cursor=pointer]
+  - generic [ref=e12]:
+    - textbox "ROOM CODE" [ref=e13]
+    - button "Join" [disabled] [ref=e14] [cursor=pointer]
+  - generic [ref=e15]:
+    - generic [ref=e16]: Active Rooms
+    - button "Alice UX7K9Q 6 open slots In Progress" [ref=e17] [cursor=pointer]:
+      - generic [ref=e18]:
+        - generic [ref=e19]: Alice
+        - generic [ref=e20]: UX7K9Q
+      - generic [ref=e21]:
+        - generic [ref=e22]: 6 open slots
+        - generic [ref=e23]: In Progress
+    - button "TestA HEZSJP 6 open slots Lobby" [ref=e24] [cursor=pointer]:
+      - generic [ref=e25]:
+        - generic [ref=e26]: TestA
+        - generic [ref=e27]: HEZSJP
+      - generic [ref=e28]:
+        - generic [ref=e29]: 6 open slots
+        - generic [ref=e30]: Lobby

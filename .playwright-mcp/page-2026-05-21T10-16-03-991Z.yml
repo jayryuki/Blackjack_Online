@@ -1,0 +1,35 @@
+- generic [ref=e137]:
+  - generic [ref=e138]:
+    - button "← Leave" [ref=e139] [cursor=pointer]
+    - generic [ref=e140]: HEZSJP
+    - button "Dark" [ref=e141] [cursor=pointer]
+    - generic [ref=e142]: v1.0.1
+  - generic [ref=e143]:
+    - generic "Click to change deck count (applies next round)" [ref=e145] [cursor=pointer]:
+      - generic [ref=e150]: 2 Decks
+    - generic [ref=e151]:
+      - generic [ref=e152]: Dealer
+      - generic [ref=e281]: Dealer
+    - generic [ref=e157]: TestB
+    - generic [ref=e283]: Waiting for cards...
+  - generic [ref=e284]:
+    - generic [ref=e285]: Place Your Bet
+    - generic [ref=e286]: $10
+    - generic [ref=e287]:
+      - button "5" [ref=e288] [cursor=pointer]:
+        - generic [ref=e289]: "5"
+      - button "10" [ref=e290] [cursor=pointer]:
+        - generic [ref=e291]: "10"
+      - button "25" [ref=e292] [cursor=pointer]:
+        - generic [ref=e293]: "25"
+      - button "50" [ref=e294] [cursor=pointer]:
+        - generic [ref=e295]: "50"
+      - button "100" [ref=e296] [cursor=pointer]:
+        - generic [ref=e297]: "100"
+    - generic [ref=e298]:
+      - button "Min" [ref=e299] [cursor=pointer]
+      - button "Half" [ref=e300] [cursor=pointer]
+      - button "Max" [ref=e301] [cursor=pointer]
+      - button "Clear" [ref=e302] [cursor=pointer]
+    - button "Place Bet ($10)" [ref=e303] [cursor=pointer]
+    - generic [ref=e304]: "Bankroll: $1010 | Min: $10 | Max: $500"

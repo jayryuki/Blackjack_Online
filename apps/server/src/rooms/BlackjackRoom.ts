@@ -628,7 +628,9 @@ export class BlackjackRoom extends Room<GameState> {
     this.clearTurnTimer();
 
     const occupied = this.getOccupiedSeats();
-    console.log(`[NextTurn] occupied seats: [${occupied.join(', ')}] activeSeat=${this.activeSeat}`);
+    console.error(`[NextTurn] occupied seats: [${occupied.join(', ')}] activeSeat=${this.activeSeat}`);
+    console.error(`[NextTurn] internalState keys: [${Array.from(this.internalState.keys()).join(', ')}]`);
+    console.error(`[NextTurn] seatToSession: ${JSON.stringify(Object.fromEntries(this.seatToSession))}`);
 
     // Find the first seat with an active hand
     for (const seat of occupied) {
@@ -663,7 +665,7 @@ export class BlackjackRoom extends Room<GameState> {
           this.setPhase(phase);
           this.syncAllPlayers();
 
-          console.log(`[NextTurn] Found playing hand: seat=${seat} handIndex=${hi} sessionId=${sessionId}`);
+          console.error(`[NextTurn] Found playing hand: seat=${seat} handIndex=${hi} sessionId=${sessionId}`);
 
           if (this.isBot(seat)) {
             this.scheduleBotAction(seat);
@@ -712,9 +714,11 @@ export class BlackjackRoom extends Room<GameState> {
   }
 
   private handlePlayerAction(client: Client, data: { action: PlayerAction }) {
+    console.error(`[ACTION] phase=${this.gamePhase.type} activeSeat=${this.activeSeat}`);
     if (this.gamePhase.type !== 'PLAYER_TURN') return;
 
     const seat = this.getSeatForClient(client);
+    console.error(`[ACTION] client=${client.sessionId} seat=${seat} activeSeat=${this.activeSeat}`);
     if (seat === null || seat !== this.activeSeat) return;
 
     const sessionId = client.sessionId;
@@ -795,6 +799,7 @@ export class BlackjackRoom extends Room<GameState> {
 
       case 'STAND': {
         hand.status = 'standing';
+        console.error(`[STAND] seat=${seat} sessionId=${sessionId} advancing...`);
         this.syncPlayerState(sessionId);
         this.advanceHandOrNextPlayer(seat, sessionId);
         break;
@@ -973,7 +978,8 @@ export class BlackjackRoom extends Room<GameState> {
       return;
     }
 
-    console.log(`[Advance] seat=${seat} hands=${internal.hands.length} activeHandIndex=${this.activeHandIndex}`);
+    console.error(`[Advance] seat=${seat} hands=${internal.hands.length} activeHandIndex=${this.activeHandIndex} calling startNextPlayerTurn`);
+    console.error(`[Advance] hand statuses: ${internal.hands.map((h: InternalHand) => h.status).join(',')}`);
 
     // Check if there's another hand to play (from split)
     const nextHandIndex = this.activeHandIndex + 1;
