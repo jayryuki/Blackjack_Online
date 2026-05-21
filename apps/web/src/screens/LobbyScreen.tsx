@@ -68,7 +68,12 @@ export function LobbyScreen() {
         <SeatMap players={players} myPlayerId={mySessionId} maxSeats={7} onChooseSeat={(idx) => room?.send('choose-seat', { seatIndex: idx })} />
 
         <div>
-          <PlayerList players={players} />
+          <PlayerList
+            players={players}
+            isHost={isHost}
+            myPlayerId={mySessionId}
+            onKick={(targetId) => room?.send('kick-player', { targetId })}
+          />
         </div>
 
         <div>

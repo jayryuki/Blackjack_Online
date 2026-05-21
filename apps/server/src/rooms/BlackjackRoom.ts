@@ -50,6 +50,7 @@ export class BlackjackRoom extends Room<GameState> {
   private seatToSession: Map<number, string> = new Map();
   private gamePhase: GamePhase = { type: 'LOBBY' };
   private botTimers: Map<string, NodeJS.Timeout> = new Map();
+  private turnTimer: NodeJS.Timeout | null = null;
 
   onCreate(options: { preset: string; hostPlayerId: string; roomCode: string }) {
     this.setState(new GameState());
@@ -71,9 +72,10 @@ export class BlackjackRoom extends Room<GameState> {
       this.handleToggleReady(client);
     });
 
-    this.onMessage('start-round', (_client) => {
-      // Only allow starting a new round from ROUND_END or LOBBY
+    this.onMessage('start-round', (client) => {
       if (this.gamePhase.type !== 'ROUND_END' && this.gamePhase.type !== 'LOBBY') return;
+      const player = this.state.players.get(client.sessionId);
+      if (!player || !player.isHost) return;
       this.startBettingPhase();
     });
 
@@ -112,6 +114,16 @@ export class BlackjackRoom extends Room<GameState> {
 
       // Update numDecks immediately (syncs to all clients)
       this.state.numDecks = data.numDecks;
+    });
+
+    this.onMessage('kick-player', (client, data: { targetId: string }) => {
+      const player = this.state.players.get(client.sessionId);
+      if (!player || !player.isHost) return;
+      if (!data.targetId || data.targetId === client.sessionId) return;
+      const target = this.clients.find(c => c.sessionId === data.targetId);
+      if (target) {
+        target.leave(4001, 'Kicked by host');
+      }
     });
   }
 
@@ -157,6 +169,7 @@ export class BlackjackRoom extends Room<GameState> {
   }
 
   onLeave(client: Client) {
+    this.clearTurnTimer();
     const seat = this.sessionToSeat.get(client.sessionId);
     if (seat !== undefined) {
       this.seatToSession.delete(seat);
@@ -481,26 +494,35 @@ export class BlackjackRoom extends Room<GameState> {
     // cardIndex 2 = dealer first card, 3 = dealer second card
 
     if (cardIndex < 2) {
-      // Deal to players
+      // Deal to players (burn card for disconnected players to preserve order)
       for (const seat of occupied) {
         const sessionId = this.seatToSession.get(seat);
-        if (!sessionId) continue; // Player disconnected mid-deal
-        const internal = this.internalState.get(sessionId);
-        if (!internal || internal.hands.length === 0) continue;
-        const hand = internal.hands[0];
-        const result = drawCard(this.deck!);
-        if (result) {
-          this.deck = result.deck;
-          hand.cards.push(result.card);
+        const internal = sessionId ? this.internalState.get(sessionId) : null;
+
+        let result = drawCard(this.deck!);
+        if (!result) {
+          this.deck = shuffleDeck(createDeck(this.state.numDecks), `${this.roomId}-${Date.now()}`);
+          result = drawCard(this.deck!);
         }
-        this.syncPlayerState(sessionId);
+        if (!result) continue;
+        this.deck = result.deck;
+
+        if (internal && internal.hands.length > 0) {
+          internal.hands[0].cards.push(result.card);
+          if (sessionId) this.syncPlayerState(sessionId);
+        }
+        // else: card is burned (drawn but not assigned to disconnected player)
       }
       this.syncAllPlayers();
 
       setTimeout(() => this.dealCardSequence(occupied, cardIndex + 1), 600);
     } else if (cardIndex === 2) {
       // Dealer first card (face up)
-      const result = drawCard(this.deck!);
+      let result = drawCard(this.deck!);
+      if (!result) {
+        this.deck = shuffleDeck(createDeck(this.state.numDecks), `${this.roomId}-${Date.now()}`);
+        result = drawCard(this.deck!);
+      }
       if (result) {
         this.deck = result.deck;
         this.dealerCards.push(result.card);
@@ -511,7 +533,11 @@ export class BlackjackRoom extends Room<GameState> {
       setTimeout(() => this.dealCardSequence(occupied, cardIndex + 1), 600);
     } else if (cardIndex === 3) {
       // Dealer second card (face down)
-      const result = drawCard(this.deck!);
+      let result = drawCard(this.deck!);
+      if (!result) {
+        this.deck = shuffleDeck(createDeck(this.state.numDecks), `${this.roomId}-${Date.now()}`);
+        result = drawCard(this.deck!);
+      }
       if (result) {
         this.deck = result.deck;
         this.dealerCards.push(result.card);
@@ -575,6 +601,9 @@ export class BlackjackRoom extends Room<GameState> {
   // ---------------------------------------------------------------------------
 
   private startNextPlayerTurn() {
+    // Clear any existing turn timer
+    this.clearTurnTimer();
+
     const occupied = this.getOccupiedSeats();
 
     // Find next seat that still has a playing hand
@@ -619,6 +648,17 @@ export class BlackjackRoom extends Room<GameState> {
                   canSplit: canSplit(hand, availableBankroll),
                   canSurrender: canSurrender(hand),
                 });
+                // Set turn timer — auto-stand after 30 seconds
+                this.turnTimer = setTimeout(() => {
+                  if (this.gamePhase.type === 'PLAYER_TURN' && this.activeSeat === seat) {
+                    const sId = this.seatToSession.get(seat);
+                    const intState = sId ? this.internalState.get(sId) : null;
+                    if (intState && intState.hands[hi]?.status === 'playing') {
+                      intState.hands[hi].status = 'standing';
+                      this.advanceHandOrNextPlayer(seat, sId!);
+                    }
+                  }
+                }, 30000);
               }
             }
             found = true;
@@ -636,6 +676,13 @@ export class BlackjackRoom extends Room<GameState> {
     }
   }
 
+  private clearTurnTimer() {
+    if (this.turnTimer) {
+      clearTimeout(this.turnTimer);
+      this.turnTimer = null;
+    }
+  }
+
   private handlePlayerAction(client: Client, data: { action: PlayerAction }) {
     if (this.gamePhase.type !== 'PLAYER_TURN') return;
 
@@ -649,6 +696,7 @@ export class BlackjackRoom extends Room<GameState> {
     const hand = internal.hands[this.activeHandIndex];
     if (!hand || hand.status !== 'playing') return;
 
+    this.clearTurnTimer();
     this.executeAction(seat, sessionId, this.activeHandIndex, data.action);
   }
 
@@ -659,7 +707,12 @@ export class BlackjackRoom extends Room<GameState> {
 
     switch (action) {
       case 'HIT': {
-        const result = drawCard(this.deck!);
+        if (!this.deck) return;
+        let result = drawCard(this.deck);
+        if (!result) {
+          this.deck = shuffleDeck(createDeck(this.state.numDecks), `${this.roomId}-${Date.now()}`);
+          result = drawCard(this.deck!);
+        }
         if (result) {
           this.deck = result.deck;
           hand.cards.push(result.card);
@@ -724,7 +777,12 @@ export class BlackjackRoom extends Room<GameState> {
         internal.bankroll -= hand.bet;
         hand.bet *= 2;
         hand.isDoubled = true;
-        const result = drawCard(this.deck!);
+        if (!this.deck) return;
+        let result = drawCard(this.deck);
+        if (!result) {
+          this.deck = shuffleDeck(createDeck(this.state.numDecks), `${this.roomId}-${Date.now()}`);
+          result = drawCard(this.deck!);
+        }
         if (result) {
           this.deck = result.deck;
           hand.cards.push(result.card);
@@ -765,8 +823,13 @@ export class BlackjackRoom extends Room<GameState> {
           payout: 0,
         };
 
-        // Draw one card for each hand
-        const r1 = drawCard(this.deck!);
+        // Draw one card for each hand (reshuffle if needed)
+        if (!this.deck) return;
+        let r1 = drawCard(this.deck);
+        if (!r1) {
+          this.deck = shuffleDeck(createDeck(this.state.numDecks), `${this.roomId}-${Date.now()}`);
+          r1 = drawCard(this.deck!);
+        }
         if (r1) {
           this.deck = r1.deck;
           hand1.cards.push(r1.card);
@@ -775,7 +838,11 @@ export class BlackjackRoom extends Room<GameState> {
           else if (v1.isBust) hand1.status = 'bust';
         }
 
-        const r2 = drawCard(this.deck!);
+        let r2 = drawCard(this.deck!);
+        if (!r2) {
+          this.deck = shuffleDeck(createDeck(this.state.numDecks), `${this.roomId}-${Date.now()}`);
+          r2 = drawCard(this.deck!);
+        }
         if (r2) {
           this.deck = r2.deck;
           hand2.cards.push(r2.card);
@@ -921,6 +988,8 @@ export class BlackjackRoom extends Room<GameState> {
   // ---------------------------------------------------------------------------
 
   private startDealerTurn() {
+    this.clearTurnTimer();
+    this.activeSeat = -1;
     const phase: GamePhase = { type: 'DEALER_TURN' };
     this.setPhase(phase);
 
