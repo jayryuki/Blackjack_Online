@@ -85,6 +85,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
     room.onMessage('your-turn', onYourTurn);
     room.onMessage('place-your-bet', onPlaceBet);
     room.onMessage('round-result', onRoundResult);
+    room.onMessage('shuffling', () => {});
 
     return () => {
       room.onStateChange.remove(onStateChange);
@@ -459,7 +460,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
         )}
 
         {/* Player actions */}
-        {showActions && (
+        {showActions && turnInfo && (
           <ActionButtons
             canHit={turnInfo.canHit}
             canStand={turnInfo.canStand}
