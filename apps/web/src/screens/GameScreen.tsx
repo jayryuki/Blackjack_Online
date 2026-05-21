@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/common/Button.js';
 import { ThemeToggle } from '../components/common/ThemeToggle.js';
@@ -63,7 +63,10 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
     };
     room.onStateChange(onStateChange);
 
-    const onYourTurn = (data: any) => setTurnInfo(data);
+    const onYourTurn = (data: any) => {
+      turnInfoRef.current = data;
+      setTurnInfo(data);
+    };
     const onPlaceBet = () => {
       // Server says it's time to bet — just ensure we show bet controls
       // (the phase state already handles this, but this is a backup)
@@ -88,40 +91,58 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
     };
   }, [room]);
 
-  // Clear stale state on phase transitions
+  // Derive turn state directly from server-synced state (like Mahjong game does).
+  // The 'your-turn' message provides action capabilities (canHit, canDouble, etc.),
+  // but isMyTurn is derived purely from state to avoid race conditions with React effects.
   const activeSeat = state?.activeSeat ?? 255;
+  const activeHandIndex = state?.activeHandIndex ?? 0;
   const currentPhase = state?.phase || 'LOBBY';
-  const prevPhaseRef = React.useRef<string>(currentPhase);
-  useEffect(() => {
-    if (currentPhase !== prevPhaseRef.current) {
-      if (currentPhase === 'BETTING') {
-        setRoundResult(null);
-        setBankrollOverride(null);
-      }
-      // Only clear turnInfo when moving AWAY from PLAYER_TURN (not into it),
-      // to avoid clobbering turnInfo set by the 'your-turn' message that
-      // arrives before the state patch (race condition between direct msg and state sync)
-      if (prevPhaseRef.current === 'PLAYER_TURN') {
-        setTurnInfo(null);
-      }
-      prevPhaseRef.current = currentPhase;
-    }
-  }, [currentPhase]);
 
-  // Derive my seat index from state for use in effects (before myPlayer is declared)
-  const mySeatIndex: number | undefined = (state?.players as any[] | undefined)?.find(
+  const players: any[] = state?.players || [];
+  const mySeatIndex: number | undefined = players.find(
     (p: any) => p.playerId === mySessionId
   )?.seatIndex;
 
-  // Clear turnInfo when it's no longer our turn.
-  // We only clear when the active seat moves to someone else (not our seat),
-  // to avoid clobbering turnInfo from the 'your-turn' direct message that
-  // can arrive in the same render cycle as the state patch.
+  const isMyTurn = currentPhase === 'PLAYER_TURN' && activeSeat !== 255 && activeSeat === mySeatIndex;
+
+  // Use a ref so the 'your-turn' message handler can update without being clobbered
+  // by effects. We also derive turnInfo from the state when it's our turn but
+  // turnInfo hasn't been set yet (e.g., after a hot reload or reconnect).
+  const turnInfoRef = useRef<any>(null);
   useEffect(() => {
-    if (activeSeat !== 255 && mySeatIndex !== undefined && activeSeat !== mySeatIndex) {
+    if (isMyTurn && !turnInfoRef.current) {
+      // Derive turnInfo from state if 'your-turn' message was missed
+      const myPlayer = players.find((p: any) => p.playerId === mySessionId);
+      const myHands: any[] = myPlayer?.hands || [];
+      const activeHand = myHands[activeHandIndex];
+      if (activeHand) {
+        const derived = {
+          seat: activeSeat,
+          handIndex: activeHandIndex,
+          canHit: activeHand.status === 'playing',
+          canStand: activeHand.status === 'playing',
+          canDouble: activeHand.status === 'playing' && activeHand.cards?.length === 2,
+          canSplit: false,
+          canSurrender: false,
+        };
+        turnInfoRef.current = derived;
+        setTurnInfo(derived);
+      }
+    } else if (!isMyTurn) {
+      turnInfoRef.current = null;
       setTurnInfo(null);
     }
-  }, [activeSeat, mySeatIndex]);
+  }, [isMyTurn, activeSeat, activeHandIndex, mySeatIndex]);
+
+  // Clear round result on new betting phase
+  const prevPhaseRef = useRef<string>(currentPhase);
+  useEffect(() => {
+    if (currentPhase === 'BETTING' && prevPhaseRef.current !== 'BETTING') {
+      setRoundResult(null);
+      setBankrollOverride(null);
+    }
+    prevPhaseRef.current = currentPhase;
+  }, [currentPhase]);
 
   const handlePlaceBet = useCallback((amount: number) => {
     setLastBet(amount);
@@ -130,6 +151,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
 
   const handleAction = useCallback((action: string) => {
     room?.send('player-action', { action });
+    turnInfoRef.current = null;
     setTurnInfo(null);
   }, [room]);
 
@@ -153,12 +175,10 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
     );
   }
 
-  const players: any[] = state.players || [];
   const myPlayer = players.find((p: any) => p.playerId === mySessionId);
   const myHands: any[] = myPlayer?.hands || [];
   const dealerCards: any[] = state.dealerCards || [];
   const dealerStatus: string = state.dealerStatus || 'waiting';
-  const isMyTurn = turnInfo && turnInfo.canHit !== undefined && activeSeat === myPlayer?.seatIndex;
   const effectiveBankroll = bankrollOverride ?? (myPlayer?.bankroll || 1000);
 
   const showShuffling = currentPhase === 'SHUFFLING';
