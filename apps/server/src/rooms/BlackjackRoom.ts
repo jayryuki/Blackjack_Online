@@ -1073,8 +1073,15 @@ export class BlackjackRoom extends Room<GameState> {
       this.syncDealerCards(true);
       this.syncAllPlayers();
     } else {
-      // Deck exhausted — reshuffle and continue
+      // Deck exhausted — reshuffle and draw again
       this.deck = shuffleDeck(createDeck(this.state.numDecks), `${this.roomId}-${Date.now()}`);
+      const retry = drawCard(this.deck);
+      if (retry) {
+        this.deck = retry.deck;
+        this.dealerCards.push(retry.card);
+        this.syncDealerCards(true);
+        this.syncAllPlayers();
+      }
     }
 
     // Continue drawing with delay

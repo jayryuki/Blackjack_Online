@@ -77,7 +77,7 @@ export function LobbyScreen() {
         </div>
 
         <div>
-          <RulesSummary />
+          <RulesSummary numDecks={state?.numDecks ?? 2} />
         </div>
 
         <div>

@@ -2,12 +2,13 @@ import React from 'react';
 
 interface RulesSummaryProps {
   presetName?: string;
+  numDecks?: number;
 }
 
-export function RulesSummary({ presetName = 'Standard' }: RulesSummaryProps) {
+export function RulesSummary({ presetName = 'Standard', numDecks = 2 }: RulesSummaryProps) {
   const rules = [
     { label: 'Variant', value: presetName },
-    { label: 'Decks', value: '6' },
+    { label: 'Decks', value: String(numDecks) },
     { label: 'Dealer', value: 'Stands on 17' },
     { label: 'Blackjack', value: '3:2 payout' },
     { label: 'Surrender', value: 'Allowed' },
