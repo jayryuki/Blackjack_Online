@@ -383,7 +383,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
                 cards={myCards}
                 bet={hand.bet}
                 status={hand.status}
-                isActive={isMyTurn && turnInfo.handIndex === i}
+                isActive={isMyTurn && turnInfo?.handIndex === i}
                 showCards={true}
                 label={myHands.length > 1 ? `Hand ${i + 1}` : undefined}
               />
