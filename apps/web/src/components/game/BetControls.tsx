@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../common/Button.js';
+import { Button } from '@games/ui';
 import { ChipRenderer } from './ChipRenderer.js';
 
 interface BetControlsProps {

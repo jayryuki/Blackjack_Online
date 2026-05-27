@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/common/Button.js';
-import { ThemeToggle } from '../components/common/ThemeToggle.js';
+import { Button, ThemeToggle } from '@games/ui';
 import { DealerArea } from '../components/game/DealerArea.js';
 import { HandArea } from '../components/game/HandArea.js';
 import { ActionButtons } from '../components/game/ActionButtons.js';

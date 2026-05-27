@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '../components/common/Button.js';
-import { ThemeToggle } from '../components/common/ThemeToggle.js';
+import { Button, ThemeToggle } from '@games/ui';
 import { clearRoom } from '../lib/gameContext.js';
 
 export function ResultScreen() {

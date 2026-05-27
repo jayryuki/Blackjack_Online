@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '../common/Button.js';
+import { Button } from '@games/ui';
 
 interface ActionButtonsProps {
   canHit: boolean;

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/common/Button.js';
-import { ThemeToggle } from '../components/common/ThemeToggle.js';
+import { Button, ThemeToggle } from '@games/ui';
 
 interface RoomInfo {
   roomId: string;

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { Button } from '../components/common/Button.js';
-import { ThemeToggle } from '../components/common/ThemeToggle.js';
+import { Button, ThemeToggle } from '@games/ui';
 import { SeatMap } from '../components/lobby/SeatMap.js';
 import { PlayerList } from '../components/lobby/PlayerList.js';
 import { RulesSummary } from '../components/lobby/RulesSummary.js';

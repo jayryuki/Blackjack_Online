@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@blackjack/game-core": "workspace:*",
+    "@games/ui": "workspace:*",
     "colyseus.js": "^0.16.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
