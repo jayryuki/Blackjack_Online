@@ -1,6 +1,9 @@
-node_modules
-dist
+node_modules/
+dist/
 .next
 *.log
 .DS_Store
 .playwright-mcp/
+old_screenshots/
+.env
+*.tsbuildinfo
