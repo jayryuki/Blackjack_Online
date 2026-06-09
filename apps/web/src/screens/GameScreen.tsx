@@ -180,6 +180,8 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   const dealerCards: any[] = state.dealerCards || [];
   const dealerStatus: string = state.dealerStatus || 'waiting';
   const effectiveBankroll = bankrollOverride ?? (myPlayer?.bankroll || 1000);
+  const myRoundResults = roundResult?.results?.filter((r: any) => r.seat === myPlayer?.seatIndex) || [];
+  const myRoundNet = myRoundResults.reduce((sum: number, r: any) => sum + (r.payout || 0), 0);
 
   const showShuffling = currentPhase === 'SHUFFLING';
   const showBetControls = currentPhase === 'BETTING' && !myPlayer?.hasBet;
@@ -192,7 +194,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   const showWaitingForResult = currentPhase === 'SETTLEMENT';
 
   return (
-    <div style={{
+    <div className="bj-game-root" style={{
       height: '100dvh',
       display: 'flex',
       flexDirection: 'column',
@@ -200,7 +202,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
       overflow: 'hidden',
     }}>
       {/* Top bar */}
-      <div style={{
+      <div className="bj-topbar" style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -225,7 +227,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
       </div>
 
       {/* Table area */}
-      <div style={{
+      <div className="bj-table-stage" style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
@@ -403,7 +405,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
       </div>
 
       {/* Bottom action area */}
-      <div style={{
+      <div className="bj-action-dock" style={{
         padding: '0.75rem 1rem',
         background: 'rgba(0,0,0,0.2)',
         flexShrink: 0,
@@ -536,7 +538,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
               flexWrap: 'wrap',
               justifyContent: 'center',
             }}>
-              {roundResult.results?.filter((r: any) => r.seat === myPlayer?.seatIndex).map((r: any, i: number) => (
+              {myRoundResults.map((r: any, i: number) => (
                 <div key={i} style={{
                   padding: '0.5rem 1rem',
                   borderRadius: '8px',
@@ -566,6 +568,16 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
             </div>
           </div>
         )}
+
+      {showResult && myRoundNet > 0 && (
+        <div className="bj-win-burst" aria-hidden="true">
+          <div className="bj-win-burst__ring" />
+          <div className="bj-win-burst__amount">+${myRoundNet}</div>
+          <div className="bj-win-burst__label">Nice win</div>
+          {Array.from({ length: 18 }).map((_, i) => <i key={i} style={{ ['--i' as any]: i }} />)}
+        </div>
+      )}
+
       </div>
     </div>
   );
