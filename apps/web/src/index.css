@@ -536,3 +536,151 @@
     .bj-action-dock { padding: 0.6rem !important; }
   }
 }
+
+
+@layer components {
+  .bj-shell .game-shell__hero,
+  .bj-shell .game-shell__card,
+  .bj-lobby-shell .lobby-shell__hero,
+  .bj-lobby-shell .lobby-panel,
+  .bj-lobby-shell .lobby-shell__actions {
+    background: rgba(255, 252, 246, 0.84);
+    border-color: rgba(63, 45, 31, 0.12);
+    color: var(--roulette-chrome-text, var(--text-primary));
+    box-shadow: 0 16px 44px rgba(71, 45, 26, 0.12), inset 0 1px 0 rgba(255,255,255,0.6);
+  }
+
+  .dark .bj-shell .game-shell__hero,
+  .dark .bj-shell .game-shell__card,
+  .dark .bj-lobby-shell .lobby-shell__hero,
+  .dark .bj-lobby-shell .lobby-panel,
+  .dark .bj-lobby-shell .lobby-shell__actions {
+    background: rgba(9, 22, 18, 0.68);
+    border-color: rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.94);
+    box-shadow: 0 20px 55px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  .bj-shell .game-shell__title,
+  .bj-shell .game-room-item__name,
+  .bj-shell .preset-card__name,
+  .bj-lobby-shell .lobby-shell__title,
+  .bj-lobby-shell .lobby-panel,
+  .bj-lobby-shell .lobby-shell__code,
+  .bj-lobby-shell .game-room-item__name {
+    color: var(--text-primary);
+  }
+
+  .bj-shell .game-shell__subtitle,
+  .bj-shell .game-shell__footnote,
+  .bj-shell .game-room-item__code,
+  .bj-shell .game-room-item__slots,
+  .bj-lobby-shell .lobby-shell__subtitle,
+  .bj-lobby-shell .lobby-shell__code,
+  .bj-lobby-shell .lobby-panel__title,
+  .bj-shell .game-field__label,
+  .bj-shell .game-room-list__title,
+  .bj-shell .game-shell__eyebrow,
+  .bj-lobby-shell .lobby-shell__eyebrow {
+    color: var(--text-secondary);
+  }
+
+  .dark .bj-shell .game-shell__title,
+  .dark .bj-shell .game-room-item__name,
+  .dark .bj-shell .preset-card__name,
+  .dark .bj-lobby-shell .lobby-shell__title,
+  .dark .bj-lobby-shell .lobby-panel,
+  .dark .bj-lobby-shell .lobby-shell__code,
+  .dark .bj-lobby-shell .game-room-item__name { color: rgba(255,255,255,0.96); }
+
+  .dark .bj-shell .game-shell__subtitle,
+  .dark .bj-shell .game-shell__footnote,
+  .dark .bj-shell .game-room-item__code,
+  .dark .bj-shell .game-room-item__slots,
+  .dark .bj-lobby-shell .lobby-shell__subtitle,
+  .dark .bj-lobby-shell .lobby-shell__code,
+  .dark .bj-lobby-shell .lobby-panel__title,
+  .dark .bj-shell .game-field__label,
+  .dark .bj-shell .game-room-list__title,
+  .dark .bj-shell .game-shell__eyebrow,
+  .dark .bj-lobby-shell .lobby-shell__eyebrow { color: rgba(255,255,255,0.74); }
+
+  .bj-shell .game-room-item,
+  .bj-shell .preset-card {
+    background: rgba(255,255,255,0.58);
+    border-color: rgba(63, 45, 31, 0.10);
+  }
+
+  .dark .bj-shell .game-room-item,
+  .dark .bj-shell .preset-card {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.12);
+  }
+
+  .bj-action-dock {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .bj-bet-panel {
+    margin: 0 auto !important;
+    align-self: center;
+    justify-self: center;
+  }
+
+  .bj-bet-panel__chips,
+  .bj-bet-panel__quick,
+  .bj-deck-selector__options {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+    width: 100%;
+    gap: 0.625rem !important;
+  }
+
+  .bj-deck-selector__option {
+    min-width: 0;
+    min-height: 82px;
+    justify-content: center;
+    padding: 0.7rem 0.65rem !important;
+  }
+
+  .bj-deck-selector__swatches {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 18px;
+  }
+
+  .bj-bet-panel__summary {
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .bj-turn-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 auto;
+    padding: 0.6rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(8,24,18,0.74);
+    border: 1px solid rgba(245,196,81,0.28);
+    color: rgba(255,255,255,0.92);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.18);
+  }
+
+  .bj-turn-banner__time {
+    min-width: 2.4ch;
+    color: #ffeaa3;
+    font-weight: 800;
+  }
+
+  @media (max-width: 720px) {
+    .bj-bet-panel__chips,
+    .bj-bet-panel__quick,
+    .bj-deck-selector__options {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}

@@ -26,6 +26,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   const [bankrollOverride, setBankrollOverride] = useState<number | null>(null);
   const [showDeckSelector, setShowDeckSelector] = useState(false);
   const [lastBet, setLastBet] = useState<number | null>(null);
+  const [turnSecondsLeft, setTurnSecondsLeft] = useState<number>(30);
 
   useEffect(() => {
     if (!room) return;
@@ -205,6 +206,23 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   const showDealing = currentPhase === 'DEALING';
   const showResult = currentPhase === 'ROUND_END' && roundResult;
   const showWaitingForResult = currentPhase === 'SETTLEMENT';
+
+  useEffect(() => {
+    if (!showActions) {
+      setTurnSecondsLeft(30);
+      return;
+    }
+
+    setTurnSecondsLeft(30);
+    const started = Date.now();
+    const interval = window.setInterval(() => {
+      const elapsed = Math.floor((Date.now() - started) / 1000);
+      const remaining = Math.max(0, 30 - elapsed);
+      setTurnSecondsLeft(remaining);
+    }, 250);
+
+    return () => window.clearInterval(interval);
+  }, [showActions, activeSeat, activeHandIndex]);
 
   return (
     <div className="bj-game-root" style={{
@@ -475,14 +493,22 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
 
         {/* Player actions */}
         {showActions && turnInfo && (
-          <ActionButtons
-            canHit={turnInfo.canHit}
-            canStand={turnInfo.canStand}
-            canDouble={turnInfo.canDouble}
-            canSplit={turnInfo.canSplit}
-            canSurrender={turnInfo.canSurrender}
-            onAction={handleAction}
-          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', alignItems: 'center', width: '100%' }}>
+            <div className="bj-turn-banner">
+              <span>Your turn</span>
+              <span aria-hidden="true">·</span>
+              <span className="bj-turn-banner__time">{turnSecondsLeft}s</span>
+              <span style={{ color: 'rgba(255,255,255,0.7)' }}>before auto-stand</span>
+            </div>
+            <ActionButtons
+              canHit={turnInfo.canHit}
+              canStand={turnInfo.canStand}
+              canDouble={turnInfo.canDouble}
+              canSplit={turnInfo.canSplit}
+              canSurrender={turnInfo.canSurrender}
+              onAction={handleAction}
+            />
+          </div>
         )}
 
         {/* Waiting for turn */}
