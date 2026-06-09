@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, ThemeToggle } from '@games/ui';
+import { Button, Input } from '@games/ui';
+import { GameShell } from '../components/layout/GameShell.js';
 
 interface RoomInfo {
   roomId: string;
@@ -78,140 +79,75 @@ export function StartScreen() {
   const activeRooms = rooms.filter(r => r.status !== 'finished');
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', padding: '2rem' }}>
-      <h1 style={{
-        fontFamily: "'Newsreader', Georgia, serif",
-        fontSize: '3rem',
-        fontWeight: 500,
-        letterSpacing: '-0.03em',
-        color: 'var(--text-primary)',
-        margin: 0,
-      }}>
-        Blackjack
-      </h1>
-      <p style={{
-        color: 'var(--text-secondary)',
-        fontSize: '1.125rem',
-        fontStyle: 'italic',
-        fontFamily: "'Newsreader', Georgia, serif",
-        margin: 0,
-      }}>
-        Take a seat at the table.
-      </p>
+    <GameShell
+      gameName="Blackjack Online"
+      title="Blackjack"
+      subtitle="Take a seat at a polished table that feels at home on desktop and mobile."
+      preview={
+        <div className="bj-hero-preview" aria-hidden="true">
+          <div className="bj-preview-card bj-preview-card--back" />
+          <div className="bj-preview-card">A♠</div>
+          <div className="bj-preview-chip">25</div>
+        </div>
+      }
+      actions={
+        <>
+          <Button size="lg" onClick={handleCreateRoom} style={{ flex: 1 }}>Create Room</Button>
+          <Button size="lg" variant="secondary" onClick={() => navigate('/join')} style={{ flex: 1 }}>Join by Code</Button>
+        </>
+      }
+      footer={<div className="game-shell__footnote">Leave your name blank for a quick random alias.</div>}
+    >
+      <div className="game-form-grid">
+        <div className="game-field game-field--full">
+          <Input
+            label="Player Name"
+            placeholder="Leave blank for a random name"
+            value={playerName}
+            onChange={(e) => { setPlayerName(e.target.value); setError(''); }}
+          />
+        </div>
 
-      {/* Your name */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', maxWidth: '360px' }}>
-        <label style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--text-secondary)', flexShrink: 0 }}>Name</label>
-        <input
-          value={playerName}
-          onChange={(e) => { setPlayerName(e.target.value); setError(''); }}
-          placeholder="Leave blank for a random name"
-          style={{
-            flex: 1,
-            padding: '0.5rem 0.75rem',
-            borderRadius: '6px',
-            border: '1px solid var(--border-subtle)',
-            background: 'var(--surface-panel)',
-            color: 'var(--text-primary)',
-            fontSize: '0.875rem',
-            outline: 'none',
-          }}
-        />
+        <div className="game-field game-field--code">
+          <label className="game-field__label">Room Code</label>
+          <input
+            className="game-code-input"
+            value={joinCode}
+            onChange={(e) => { setJoinCode(e.target.value.toUpperCase()); setError(''); }}
+            placeholder="ABC123"
+            maxLength={6}
+          />
+        </div>
+        <Button size="lg" variant="ghost" onClick={handleJoinByCode} disabled={!joinCode.trim()} style={{ minHeight: '3.25rem' }}>
+          Join Room
+        </Button>
       </div>
 
-      {/* Action buttons */}
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-        <Button size="lg" onClick={handleCreateRoom}>Create Room</Button>
-        <ThemeToggle />
-      </div>
+      {error && <div className="game-error">{error}</div>}
 
-      {/* Join by code */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', maxWidth: '360px' }}>
-        <input
-          value={joinCode}
-          onChange={(e) => { setJoinCode(e.target.value.toUpperCase()); setError(''); }}
-          placeholder="ROOM CODE"
-          maxLength={6}
-          style={{
-            flex: 1,
-            padding: '0.5rem 0.75rem',
-            borderRadius: '6px',
-            border: '1px solid var(--border-subtle)',
-            background: 'var(--surface-panel)',
-            color: 'var(--text-primary)',
-            fontSize: '1rem',
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 600,
-            letterSpacing: '0.15em',
-            textAlign: 'center',
-            textTransform: 'uppercase',
-            outline: 'none',
-          }}
-        />
-        <Button size="sm" onClick={handleJoinByCode} disabled={!joinCode.trim()}>Join</Button>
-      </div>
-
-      {error && <div style={{ color: 'var(--danger)', fontSize: '0.8125rem' }}>{error}</div>}
-
-      {/* Active rooms list */}
       {activeRooms.length > 0 && (
-        <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', fontWeight: 600 }}>
-            Active Rooms
+        <div className="game-room-list">
+          <div className="game-room-list__title">Active Rooms</div>
+          <div className="game-room-list__items">
+            {activeRooms.map((room) => (
+              <button key={room.roomId} onClick={() => handleJoinRoom(room)} className="game-room-item">
+                <div className="game-room-item__main">
+                  <div className="game-room-item__name">{room.hostName || 'Unknown host'}</div>
+                  <div className="game-room-item__code">{room.roomCode}</div>
+                </div>
+                <div className="game-room-item__meta">
+                  <span className={room.openSlots > 0 ? 'game-room-item__slots game-room-item__slots--open' : 'game-room-item__slots'}>
+                    {room.openSlots > 0 ? `${room.openSlots} open slot${room.openSlots > 1 ? 's' : ''}` : 'Full'}
+                  </span>
+                  <span className={`game-room-item__badge ${room.status === 'lobby' ? 'is-lobby' : 'is-live'}`}>
+                    {room.status === 'lobby' ? 'Lobby' : 'In Progress'}
+                  </span>
+                </div>
+              </button>
+            ))}
           </div>
-          {activeRooms.map((room) => (
-            <button
-              key={room.roomId}
-              onClick={() => handleJoinRoom(room)}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '0.75rem 1rem',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle)',
-                background: 'var(--surface-panel)',
-                cursor: 'pointer',
-                textAlign: 'left',
-                width: '100%',
-                transition: 'border-color 120ms, background 120ms',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent-warm)'; e.currentTarget.style.background = 'var(--surface-panel-raised)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.background = 'var(--surface-panel)'; }}
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.125rem', minWidth: 0 }}>
-                <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.9375rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {room.hostName || 'Unknown'}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: "'Inter', sans-serif", letterSpacing: '0.1em' }}>
-                  {room.roomCode}
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
-                <span style={{
-                  fontSize: '0.75rem',
-                  color: room.openSlots > 0 ? 'var(--success)' : 'var(--text-muted)',
-                  fontWeight: 500,
-                }}>
-                  {room.openSlots > 0 ? `${room.openSlots} open slot${room.openSlots > 1 ? 's' : ''}` : 'Full'}
-                </span>
-                <div style={{
-                  fontSize: '0.625rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                  fontWeight: 600,
-                  padding: '0.25rem 0.5rem',
-                  borderRadius: '4px',
-                  background: room.status === 'lobby' ? 'rgba(34,197,94,0.12)' : 'rgba(184,92,58,0.12)',
-                  color: room.status === 'lobby' ? 'var(--success)' : 'var(--accent-warm)',
-                }}>
-                  {room.status === 'lobby' ? 'Lobby' : 'In Progress'}
-                </div>
-              </div>
-            </button>
-          ))}
         </div>
       )}
-    </div>
+    </GameShell>
   );
 }

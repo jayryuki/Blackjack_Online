@@ -32,12 +32,10 @@ export function LobbyScreen() {
     }
   }, [room]);
 
-  // When game starts (phase moves past LOBBY), render GameScreen in-place
   if (state?.phase && state.phase !== 'LOBBY' && room) {
     return <GameScreen room={room} mySessionId={room.sessionId} roomCode={roomCode ?? ''} />;
   }
 
-  // State.players is now a plain array from useGameClient's forceUpdate
   const players: any[] = state?.players || [];
   const chatMessages: any[] = state?.chatMessages || [];
   const mySessionId = room?.sessionId;
@@ -46,70 +44,71 @@ export function LobbyScreen() {
   const allReady = players.length > 0 && players.every((p: any) => p.isReady);
 
   return (
-    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', padding: '0.75rem', maxWidth: '800px', margin: '0 auto', overflow: 'hidden' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-        <Button variant="ghost" onClick={() => { try { room?.leave(); } catch {} clearRoom(); navigate('/'); }}>&larr; Leave</Button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, letterSpacing: '0.15em', color: 'var(--accent-warm)', fontSize: '1.125rem' }}>
-            {roomCode}
-          </div>
+    <div className="lobby-shell bj-lobby-shell">
+      <div className="lobby-shell__topbar">
+        <Button variant="ghost" onClick={() => { try { room?.leave(); } catch {} clearRoom(); navigate('/'); }}>
+          ← Leave
+        </Button>
+        <div className="lobby-shell__code-group">
+          <div className="lobby-shell__code">{roomCode}</div>
           <ThemeToggle />
         </div>
       </div>
 
-      <h1 style={{ fontFamily: "'Newsreader', Georgia, serif", fontSize: '1.5rem', fontWeight: 500, color: 'var(--text-primary)', margin: '0.75rem 0 1rem 0', flexShrink: 0 }}>
-        Lobby
-      </h1>
-
-      {error && <div style={{ color: 'var(--danger)', marginBottom: '0.5rem', flexShrink: 0 }}>{error}</div>}
-
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem', minHeight: 0, overflowY: 'auto' }}>
-        <SeatMap players={players} myPlayerId={mySessionId} maxSeats={7} onChooseSeat={(idx) => room?.send('choose-seat', { seatIndex: idx })} />
-
+      <div className="lobby-shell__hero">
         <div>
+          <div className="lobby-shell__eyebrow">Blackjack Online</div>
+          <h1 className="lobby-shell__title">Lobby</h1>
+          <p className="lobby-shell__subtitle">Seats, rules, chat, and deck settings stay organized on desktop and stack cleanly on mobile.</p>
+        </div>
+      </div>
+
+      {error && <div className="game-error">{error}</div>}
+
+      <div className="lobby-grid">
+        <section className="lobby-panel lobby-panel--wide">
+          <div className="lobby-panel__title">Table Seats</div>
+          <SeatMap players={players} myPlayerId={mySessionId} maxSeats={7} onChooseSeat={(idx) => room?.send('choose-seat', { seatIndex: idx })} />
+        </section>
+
+        <section className="lobby-panel">
+          <div className="lobby-panel__title">Players</div>
           <PlayerList
             players={players}
             isHost={isHost}
             myPlayerId={mySessionId}
             onKick={(targetId) => room?.send('kick-player', { targetId })}
           />
-        </div>
+        </section>
 
-        <div>
+        <section className="lobby-panel">
+          <div className="lobby-panel__title">Rules</div>
           <RulesSummary numDecks={state?.numDecks ?? 2} />
-        </div>
+        </section>
 
-        <div>
+        <section className="lobby-panel">
+          <div className="lobby-panel__title">Decks</div>
           <DeckSelector
             numDecks={state?.numDecks ?? 2}
             isHost={isHost}
             onChange={(numDecks) => room?.send('change-decks', { numDecks })}
           />
-        </div>
+        </section>
 
-        <div style={{ flex: 1, minHeight: 0 }}>
-          <ChatPanel
-            messages={chatMessages}
-            mySessionId={mySessionId ?? ''}
-            onSend={(text) => room?.send('chat', { text })}
-          />
-        </div>
+        <section className="lobby-panel lobby-panel--chat">
+          <div className="lobby-panel__title">Table Chat</div>
+          <div className="lobby-panel__body lobby-panel__body--fill">
+            <ChatPanel messages={chatMessages} mySessionId={mySessionId ?? ''} onSend={(text) => room?.send('chat', { text })} />
+          </div>
+        </section>
       </div>
 
-      <div style={{ display: 'flex', gap: '0.75rem', flexShrink: 0, padding: '0.75rem 0 0' }}>
-        <Button
-          variant="secondary"
-          onClick={() => room?.send('toggle-ready')}
-          style={{ flex: 1 }}
-        >
+      <div className="lobby-shell__actions">
+        <Button variant="secondary" onClick={() => room?.send('toggle-ready')} style={{ flex: 1 }}>
           {currentPlayer?.isReady ? 'Unready' : 'Ready Up'}
         </Button>
         {isHost && (
-          <Button
-            onClick={() => room?.send('start-round')}
-            disabled={!allReady}
-            style={{ flex: 1 }}
-          >
+          <Button onClick={() => room?.send('start-round')} disabled={!allReady} style={{ flex: 1 }}>
             Start Round
           </Button>
         )}
