@@ -36,7 +36,7 @@ export function DealerArea({ cards, status }: DealerAreaProps) {
   const display = showAll ? getDealerDisplay(cards) : '';
 
   return (
-    <div style={{
+    <div className="bj-dealer-panel" style={{
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

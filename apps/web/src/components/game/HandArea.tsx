@@ -51,7 +51,7 @@ export function HandArea({ cards, bet, status, isActive = false, showCards = tru
   const handDisplay = showCards ? getHandDisplay(cards) : '';
 
   return (
-    <div style={{
+    <div className={isActive ? 'bj-hand-panel bj-hand-panel--active' : 'bj-hand-panel'} style={{
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

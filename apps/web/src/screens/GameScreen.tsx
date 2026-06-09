@@ -9,6 +9,7 @@ import { CardRenderer } from '../components/game/CardRenderer.js';
 import { DeckStack } from '../components/game/DeckStack.js';
 import { DeckSelector } from '../components/lobby/DeckSelector.js';
 import { clearRoom } from '../lib/gameContext.js';
+import { playSound } from '../lib/sounds.js';
 import { handValue } from '@blackjack/game-core';
 
 interface GameScreenProps {
@@ -144,12 +145,24 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
     prevPhaseRef.current = currentPhase;
   }, [currentPhase]);
 
+  useEffect(() => {
+    if (!roundResult || mySeatIndex === undefined) return;
+    const mine = roundResult.results?.filter((r: any) => r.seat === mySeatIndex) || [];
+    if (mine.length === 0) return;
+    const net = mine.reduce((sum: number, r: any) => sum + (r.payout || 0), 0);
+    if (mine.some((r: any) => r.outcome === 'blackjack')) playSound('blackjack');
+    else if (net > 0) playSound('win');
+    else if (net < 0) playSound('lose');
+  }, [roundResult, mySeatIndex]);
+
   const handlePlaceBet = useCallback((amount: number) => {
+    playSound('chip');
     setLastBet(amount);
     room?.send('place-bet', { amount });
   }, [room]);
 
   const handleAction = useCallback((action: string) => {
+    playSound(action === 'HIT' ? 'deal' : 'action');
     room?.send('player-action', { action });
     turnInfoRef.current = null;
     setTurnInfo(null);
@@ -303,7 +316,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
           {players.filter((p: any) => p.playerId !== mySessionId).map((player: any) => {
             const hands: any[] = player.hands || [];
             return (
-              <div key={player.playerId} style={{
+              <div key={player.playerId} className="bj-opponent-card" style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -510,7 +523,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
 
         {/* Round result */}
         {showResult && (
-          <div style={{
+          <div className={myRoundNet > 0 ? 'bj-result-panel bj-result-panel--win' : myRoundNet < 0 ? 'bj-result-panel bj-result-panel--lose' : 'bj-result-panel'} style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',

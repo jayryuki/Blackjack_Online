@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@games/ui';
 import { ChipRenderer } from './ChipRenderer.js';
+import { playSound } from '../../lib/sounds.js';
 
 interface BetControlsProps {
   minBet: number;
@@ -20,13 +21,14 @@ export function BetControls({ minBet, maxBet, bankroll, onPlaceBet, initialBet }
   }, [initialBet, minBet]);
 
   const addChip = (value: number) => {
+    playSound('chip');
     setBetAmount((prev) => Math.min(prev + value, maxBet, bankroll));
   };
 
   const clearBet = () => setBetAmount(0);
 
   return (
-    <div style={{
+    <div className="bj-bet-panel" style={{
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

@@ -12,7 +12,7 @@ interface ActionButtonsProps {
 
 export function ActionButtons({ canHit, canStand, canDouble, canSplit, canSurrender, onAction }: ActionButtonsProps) {
   return (
-    <div style={{
+    <div className="bj-action-panel" style={{
       display: 'flex',
       gap: '0.5rem',
       flexWrap: 'wrap',

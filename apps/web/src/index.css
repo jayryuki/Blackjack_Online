@@ -178,3 +178,76 @@
 @media (prefers-reduced-motion: reduce) {
   .bj-win-burst, .bj-win-burst *, .bj-table-stage * { animation-duration: 1ms !important; transition-duration: 1ms !important; }
 }
+
+/* Readability pass: glass panels, stronger contrast, tactile controls */
+@layer components {
+  .bj-dealer-panel,
+  .bj-hand-panel,
+  .bj-opponent-card,
+  .bj-bet-panel,
+  .bj-action-panel,
+  .bj-result-panel {
+    background: rgba(8, 24, 18, 0.72) !important;
+    border: 1px solid rgba(255,255,255,0.16) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.94) !important;
+    backdrop-filter: blur(12px);
+  }
+
+  .bj-dealer-panel { min-width: min(92vw, 360px); }
+  .bj-hand-panel { min-width: min(92vw, 220px); }
+  .bj-hand-panel--active {
+    border-color: rgba(245,196,81,0.85) !important;
+    box-shadow: 0 0 0 2px rgba(245,196,81,0.18), 0 14px 38px rgba(0,0,0,0.28), 0 0 28px rgba(245,196,81,0.22) !important;
+  }
+
+  .bj-bet-panel {
+    width: min(94vw, 520px);
+    background: linear-gradient(180deg, rgba(11,35,27,0.92), rgba(7,22,17,0.86)) !important;
+  }
+
+  .bj-action-panel,
+  .bj-result-panel {
+    width: fit-content;
+    max-width: 96vw;
+    margin: 0 auto;
+  }
+
+  .bj-result-panel {
+    padding: 0.9rem 1.2rem;
+    border-radius: 16px;
+  }
+
+  .bj-result-panel--win {
+    border-color: rgba(72, 211, 126, 0.45) !important;
+    background: linear-gradient(180deg, rgba(20, 84, 50, 0.92), rgba(8, 34, 24, 0.88)) !important;
+  }
+
+  .bj-result-panel--lose {
+    border-color: rgba(239, 68, 68, 0.35) !important;
+  }
+
+  .bj-game-root button:not(:disabled) {
+    transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+  }
+
+  .bj-game-root button:not(:disabled):active {
+    transform: translateY(1px) scale(0.98);
+    filter: brightness(1.08);
+  }
+
+  .bj-game-root [style*="var(--text-muted)"] {
+    color: rgba(255,255,255,0.68) !important;
+  }
+
+  .bj-game-root [style*="var(--text-secondary)"] {
+    color: rgba(255,255,255,0.76) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .bj-dealer-panel { padding: 0.65rem !important; }
+  .bj-hand-panel { padding: 0.4rem !important; }
+  .bj-bet-panel { gap: 0.65rem !important; padding: 0.85rem !important; }
+  .bj-action-panel { padding: 0.55rem !important; gap: 0.35rem !important; }
+}
