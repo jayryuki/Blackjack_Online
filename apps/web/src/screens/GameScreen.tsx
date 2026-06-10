@@ -229,21 +229,26 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   return (
     <div className="bj-game-root" style={{
       minHeight: '100dvh',
+      width: '100%',
+      maxWidth: '100vw',
+      margin: '0 auto',
       display: 'flex',
       flexDirection: 'column',
       background: 'var(--surface-table)',
       overflowX: 'hidden',
       overflowY: 'auto',
       WebkitOverflowScrolling: 'touch',
+      boxSizing: 'border-box',
     }}>
       {/* Top bar */}
       <div className="bj-topbar" style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '0.5rem 1rem',
+        padding: 'max(0.5rem, env(safe-area-inset-top)) max(0.875rem, env(safe-area-inset-right)) 0.5rem max(0.875rem, env(safe-area-inset-left))',
         background: 'rgba(0,0,0,0.2)',
         flexShrink: 0,
+        boxSizing: 'border-box',
       }}>
         <Button variant="ghost" onClick={handleLeave} style={{ color: 'rgba(255,255,255,0.7)' }}>
           &larr; Leave
@@ -264,15 +269,19 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
       {/* Table area */}
       <div className="bj-table-stage" style={{
         flex: 1,
+        width: '100%',
+        maxWidth: 'min(1100px, 100%)',
+        margin: '0 auto',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '1rem',
-        padding: '1rem',
+        padding: '0.875rem max(0.75rem, env(safe-area-inset-right)) max(0.875rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left))',
         minHeight: 0,
         overflow: 'auto',
         position: 'relative',
+        boxSizing: 'border-box',
       }}>
         {/* Deck visual indicator */}
         <div style={{
