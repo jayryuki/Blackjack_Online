@@ -1006,13 +1006,26 @@
   .bj-game-root {
     min-height: 100dvh;
     height: auto !important;
-    overflow: visible !important;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip !important;
+    overflow-y: auto !important;
+  }
+
+  .bj-game-root > *,
+  .bj-table-stage > * {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
   .bj-table-stage {
+    width: 100%;
+    max-width: 100%;
     overflow-x: hidden !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
+    box-sizing: border-box;
   }
 }
