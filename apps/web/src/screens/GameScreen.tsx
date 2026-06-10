@@ -27,6 +27,8 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   const [showDeckSelector, setShowDeckSelector] = useState(false);
   const [lastBet, setLastBet] = useState<number | null>(null);
   const [turnSecondsLeft, setTurnSecondsLeft] = useState<number>(30);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState('');
 
   useEffect(() => {
     if (!room) return;
@@ -167,6 +169,13 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
     room?.send('player-action', { action });
     turnInfoRef.current = null;
     setTurnInfo(null);
+  }, [room]);
+
+  const handleChangeName = useCallback((name: string) => {
+    const trimmed = name.trim().slice(0, 20);
+    if (!trimmed) return;
+    try { localStorage.setItem('blackjack_displayName', trimmed); } catch {}
+    room?.send('change-name', { displayName: trimmed });
   }, [room]);
 
   const handleNextHand = useCallback(() => {
@@ -357,11 +366,16 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
                 minWidth: '80px',
               }}>
                 <div style={{
-                  fontSize: '0.625rem',
+                  fontSize: '0.6875rem',
                   fontWeight: 600,
-                  color: 'rgba(255,255,255,0.6)',
+                  color: 'rgba(255,255,255,0.72)',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
+                  letterSpacing: '0.06em',
+                  minWidth: 0,
+                  maxWidth: '100%',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                 }}>
                   {player.displayName}
                 </div>
@@ -412,6 +426,64 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
             );
           })}
         </div>
+
+        {myPlayer && (
+          <div style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: '0.25rem',
+            marginBottom: '0.25rem',
+          }}>
+            {editingName ? (
+              <input
+                autoFocus
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                onBlur={() => {
+                  const trimmed = nameInput.trim().slice(0, 20);
+                  if (trimmed && trimmed !== myPlayer.displayName) handleChangeName(trimmed);
+                  setEditingName(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                  if (e.key === 'Escape') setEditingName(false);
+                }}
+                style={{
+                  width: 'min(100%, 240px)',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  textAlign: 'center',
+                  color: 'var(--text-primary)',
+                  background: 'rgba(255,255,255,0.92)',
+                  border: '1px solid var(--accent-warm)',
+                  borderRadius: '999px',
+                  padding: '0.55rem 0.9rem',
+                  outline: 'none',
+                }}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => { setNameInput(myPlayer.displayName); setEditingName(true); }}
+                style={{
+                  maxWidth: '100%',
+                  border: '1px dashed rgba(255,255,255,0.24)',
+                  background: 'rgba(0,0,0,0.22)',
+                  color: 'rgba(255,255,255,0.94)',
+                  borderRadius: '999px',
+                  padding: '0.5rem 0.95rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+                title="Click to change name"
+              >
+                {myPlayer.displayName} ✎
+              </button>
+            )}
+          </div>
+        )}
 
         {/* My hands */}
         <div style={{
