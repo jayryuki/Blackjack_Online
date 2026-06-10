@@ -228,11 +228,13 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
 
   return (
     <div className="bj-game-root" style={{
-      height: '100dvh',
+      minHeight: '100dvh',
       display: 'flex',
       flexDirection: 'column',
       background: 'var(--surface-table)',
-      overflow: 'hidden',
+      overflowX: 'hidden',
+      overflowY: 'auto',
+      WebkitOverflowScrolling: 'touch',
     }}>
       {/* Top bar */}
       <div className="bj-topbar" style={{
