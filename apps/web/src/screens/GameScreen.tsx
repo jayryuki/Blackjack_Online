@@ -207,8 +207,10 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   const showResult = currentPhase === 'ROUND_END' && roundResult;
   const showWaitingForResult = currentPhase === 'SETTLEMENT';
 
+  const countdownEnabled = currentPhase === 'PLAYER_TURN' && isMyTurn;
+
   useEffect(() => {
-    if (!showActions) {
+    if (!countdownEnabled) {
       setTurnSecondsLeft(30);
       return;
     }
@@ -222,7 +224,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
     }, 250);
 
     return () => window.clearInterval(interval);
-  }, [showActions, activeSeat, activeHandIndex]);
+  }, [countdownEnabled, activeSeat, activeHandIndex]);
 
   return (
     <div className="bj-game-root" style={{
@@ -492,7 +494,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
         )}
 
         {/* Player actions */}
-        {showActions && turnInfo && (
+        {countdownEnabled && turnInfo && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', alignItems: 'center', width: '100%' }}>
             <div className="bj-turn-banner">
               <span>Your turn</span>
