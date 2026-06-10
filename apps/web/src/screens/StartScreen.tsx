@@ -15,6 +15,7 @@ interface RoomInfo {
 
 const ADJECTIVES = ['Swift', 'Calm', 'Bright', 'Keen', 'Bold', 'Fair', 'Warm', 'Cool', 'Wise', 'Coy'];
 const NOUNS = ['Ace', 'Card', 'Chip', 'Hand', 'Jack', 'King', 'Queen', 'Spade', 'Heart', 'Diamond'];
+const LS_NAME_KEY = 'blackjack_displayName';
 
 function randomName(): string {
   return ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)] + NOUNS[Math.floor(Math.random() * NOUNS.length)] + Math.floor(Math.random() * 99);
@@ -24,7 +25,9 @@ export function StartScreen() {
   const navigate = useNavigate();
   const [rooms, setRooms] = useState<RoomInfo[]>([]);
   const [joinCode, setJoinCode] = useState('');
-  const [playerName, setPlayerName] = useState('');
+  const [playerName, setPlayerName] = useState(() => {
+    try { return localStorage.getItem(LS_NAME_KEY) || ''; } catch { return ''; }
+  });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -34,7 +37,11 @@ export function StartScreen() {
       .catch(() => {});
   }, []);
 
-  const getName = () => playerName.trim() || randomName();
+  const getName = () => {
+    const name = playerName.trim() || randomName();
+    try { localStorage.setItem(LS_NAME_KEY, name); } catch {}
+    return name;
+  };
 
   const handleCreateRoom = async () => {
     const name = getName();
@@ -104,7 +111,7 @@ export function StartScreen() {
             label="Player Name"
             placeholder="Leave blank for a random name"
             value={playerName}
-            onChange={(e) => { setPlayerName(e.target.value); setError(''); }}
+            onChange={(e) => { setPlayerName(e.target.value); setError(''); try { localStorage.setItem(LS_NAME_KEY, e.target.value); } catch {} }}
           />
         </div>
 

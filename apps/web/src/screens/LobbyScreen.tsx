@@ -78,6 +78,7 @@ export function LobbyScreen() {
             isHost={isHost}
             myPlayerId={mySessionId}
             onKick={(targetId) => room?.send('kick-player', { targetId })}
+            onChangeName={(name) => { try { localStorage.setItem('blackjack_displayName', name); } catch {} room?.send('change-name', { displayName: name }); }}
           />
         </section>
 
