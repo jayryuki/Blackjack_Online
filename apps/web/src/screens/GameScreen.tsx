@@ -230,8 +230,6 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
     <div className="bj-game-root" style={{
       minHeight: '100dvh',
       width: '100%',
-      maxWidth: '100vw',
-      margin: '0 auto',
       display: 'flex',
       flexDirection: 'column',
       background: 'var(--surface-table)',
@@ -239,13 +237,16 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
       overflowY: 'auto',
       WebkitOverflowScrolling: 'touch',
       boxSizing: 'border-box',
+      paddingLeft: 'max(0.75rem, env(safe-area-inset-left))',
+      paddingRight: 'max(0.75rem, env(safe-area-inset-right))',
+      paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))',
     }}>
       {/* Top bar */}
       <div className="bj-topbar" style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 'max(0.5rem, env(safe-area-inset-top)) max(0.875rem, env(safe-area-inset-right)) 0.5rem max(0.875rem, env(safe-area-inset-left))',
+        padding: 'max(0.5rem, env(safe-area-inset-top)) 0 0.5rem 0',
         background: 'rgba(0,0,0,0.2)',
         flexShrink: 0,
         boxSizing: 'border-box',
@@ -270,14 +271,12 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
       <div className="bj-table-stage" style={{
         flex: 1,
         width: '100%',
-        maxWidth: 'min(1100px, 100%)',
-        margin: '0 auto',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '1rem',
-        padding: '0.875rem max(0.75rem, env(safe-area-inset-right)) max(0.875rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left))',
+        padding: '0.875rem 0 0',
         minHeight: 0,
         overflow: 'auto',
         position: 'relative',
