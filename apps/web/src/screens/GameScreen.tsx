@@ -190,6 +190,25 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
     navigate('/');
   };
 
+  const countdownEnabled = currentPhase === 'PLAYER_TURN' && isMyTurn;
+
+  useEffect(() => {
+    if (!countdownEnabled) {
+      setTurnSecondsLeft(30);
+      return;
+    }
+
+    setTurnSecondsLeft(30);
+    const started = Date.now();
+    const interval = window.setInterval(() => {
+      const elapsed = Math.floor((Date.now() - started) / 1000);
+      const remaining = Math.max(0, 30 - elapsed);
+      setTurnSecondsLeft(remaining);
+    }, 250);
+
+    return () => window.clearInterval(interval);
+  }, [countdownEnabled, activeSeat, activeHandIndex]);
+
   if (!state) {
     return (
       <div style={{ height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-table)' }}>
@@ -215,25 +234,6 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   const showDealing = currentPhase === 'DEALING';
   const showResult = currentPhase === 'ROUND_END' && roundResult;
   const showWaitingForResult = currentPhase === 'SETTLEMENT';
-
-  const countdownEnabled = currentPhase === 'PLAYER_TURN' && isMyTurn;
-
-  useEffect(() => {
-    if (!countdownEnabled) {
-      setTurnSecondsLeft(30);
-      return;
-    }
-
-    setTurnSecondsLeft(30);
-    const started = Date.now();
-    const interval = window.setInterval(() => {
-      const elapsed = Math.floor((Date.now() - started) / 1000);
-      const remaining = Math.max(0, 30 - elapsed);
-      setTurnSecondsLeft(remaining);
-    }, 250);
-
-    return () => window.clearInterval(interval);
-  }, [countdownEnabled, activeSeat, activeHandIndex]);
 
   return (
     <div className="bj-game-root" style={{
