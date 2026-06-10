@@ -87,7 +87,7 @@ export function StartScreen() {
         <div className="bj-hero-preview" aria-hidden="true">
           <div className="bj-preview-card bj-preview-card--back" />
           <div className="bj-preview-card">A♠</div>
-          <div className="bj-preview-chip">25</div>
+          <div className="bj-preview-chip">21</div>
         </div>
       }
       actions={
