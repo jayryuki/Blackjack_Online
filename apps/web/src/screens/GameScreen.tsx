@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, ThemeToggle } from '@games/ui';
+import { Button, ThemePicker, useWinBurst, WinBurst } from '@games/ui';
 import { DealerArea } from '../components/game/DealerArea.js';
 import { HandArea } from '../components/game/HandArea.js';
 import { ActionButtons } from '../components/game/ActionButtons.js';
@@ -209,6 +209,12 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
     return () => window.clearInterval(interval);
   }, [countdownEnabled, activeSeat, activeHandIndex]);
 
+  const myPlayer = players.find((p: any) => p.playerId === mySessionId);
+  const myRoundResults = roundResult?.results?.filter((r: any) => r.seat === myPlayer?.seatIndex) || [];
+  const myRoundNet = myRoundResults.reduce((sum: number, r: any) => sum + (r.payout || 0), 0);
+  const showResult = currentPhase === 'ROUND_END' && roundResult;
+  const winBurst = useWinBurst(Boolean(showResult && myRoundNet > 0), myRoundNet);
+
   if (!state) {
     return (
       <div style={{ height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-table)' }}>
@@ -217,13 +223,10 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
     );
   }
 
-  const myPlayer = players.find((p: any) => p.playerId === mySessionId);
   const myHands: any[] = myPlayer?.hands || [];
   const dealerCards: any[] = state.dealerCards || [];
   const dealerStatus: string = state.dealerStatus || 'waiting';
   const effectiveBankroll = bankrollOverride ?? (myPlayer?.bankroll || 1000);
-  const myRoundResults = roundResult?.results?.filter((r: any) => r.seat === myPlayer?.seatIndex) || [];
-  const myRoundNet = myRoundResults.reduce((sum: number, r: any) => sum + (r.payout || 0), 0);
 
   const showShuffling = currentPhase === 'SHUFFLING';
   const showBetControls = currentPhase === 'BETTING' && !myPlayer?.hasBet;
@@ -232,7 +235,6 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
   const showWaitingForTurn = currentPhase === 'PLAYER_TURN' && !isMyTurn;
   const showDealerTurn = currentPhase === 'DEALER_TURN';
   const showDealing = currentPhase === 'DEALING';
-  const showResult = currentPhase === 'ROUND_END' && roundResult;
   const showWaitingForResult = currentPhase === 'SETTLEMENT';
 
   return (
@@ -272,7 +274,7 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
         }}>
           {roomCode}
         </div>
-        <ThemeToggle />
+        <ThemePicker />
         <span style={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.3)', position: 'absolute', bottom: '0.25rem', right: '0.5rem' }}>v1.0.1</span>
       </div>
 
@@ -692,14 +694,8 @@ export function GameScreen({ room, mySessionId, roomCode }: GameScreenProps) {
           </div>
         )}
 
-      {showResult && myRoundNet > 0 && (
-        <div className="bj-win-burst" aria-hidden="true">
-          <div className="bj-win-burst__ring" />
-          <div className="bj-win-burst__amount">+${myRoundNet}</div>
-          <div className="bj-win-burst__label">Nice win</div>
-          {Array.from({ length: 18 }).map((_, i) => <i key={i} style={{ ['--i' as any]: i }} />)}
-        </div>
-      )}
+      {/* Win burst animation */}
+      {winBurst.shouldRender && <WinBurst containerRef={winBurst.containerRef} amount={winBurst.amount} />}
 
       </div>
     </div>

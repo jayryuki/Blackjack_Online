@@ -16,10 +16,10 @@ const SUIT_SYMBOLS: Record<string, string> = {
 };
 
 const SUIT_COLORS: Record<string, string> = {
-  hearts: '#c45a5a',
-  diamonds: '#c45a5a',
-  clubs: '#2B2926',
-  spades: '#2B2926',
+  hearts: 'var(--playing-card-red)',
+  diamonds: 'var(--playing-card-red)',
+  clubs: 'var(--playing-card-black)',
+  spades: 'var(--playing-card-black)',
 };
 
 const SIZE_MAP = {
@@ -39,7 +39,7 @@ export function CardRenderer({ suit, rank, faceDown = false, size = 'md', style 
           height,
           borderRadius: '6px',
           background: 'var(--card-back-bg)',
-          border: '2px solid #0d2b6b',
+          border: '2px solid var(--playing-card-back-border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -53,14 +53,14 @@ export function CardRenderer({ suit, rank, faceDown = false, size = 'md', style 
           height: height - 12,
           borderRadius: '3px',
           border: '1px solid rgba(255,255,255,0.2)',
-          background: 'repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,0.05) 3px, rgba(255,255,255,0.05) 6px)',
+          background: 'repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,0.20) 3px, rgba(255,255,255,0.20) 6px)',
         }} />
       </div>
     );
   }
 
   const symbol = SUIT_SYMBOLS[suit] || '?';
-  const color = SUIT_COLORS[suit] || '#2B2926';
+  const color = SUIT_COLORS[suit] || 'var(--playing-card-black)';
 
   return (
     <div

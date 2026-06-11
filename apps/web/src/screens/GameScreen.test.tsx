@@ -8,6 +8,9 @@ import { GameScreen } from './GameScreen.js';
 vi.mock('@games/ui', () => ({
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
   ThemeToggle: () => <button type="button">Theme</button>,
+  ThemePicker: () => <button type="button">Theme</button>,
+  useWinBurst: () => ({ containerRef: { current: null }, shouldRender: false, amount: 0 }),
+  WinBurst: () => <div>Win Burst</div>,
 }));
 
 vi.mock('../components/game/DealerArea.js', () => ({

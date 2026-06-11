@@ -7,28 +7,21 @@
 
 @layer base {
   :root {
-    /* Blackjack-specific overrides */
-    --surface-table: #1a6b3c;
-    --surface-table-felt: #1e7a43;
-    --card-face-bg: #FFFFFF;
-    --card-face-border: #D9D2C8;
-    --card-stroke: #2B2926;
-    --card-back-bg: #1a3a8a;
-    --chip-red: #c45a5a;
-    --chip-blue: #4a7abd;
-    --chip-green: #5a9e6e;
-    --chip-black: #2c2c30;
-    --chip-gold: #c4a040;
-  }
-
-  .dark {
-    /* Blackjack-specific dark overrides */
-    --surface-table: #0f4d2b;
-    --surface-table-felt: #136b37;
-    --card-face-bg: #f5f5f7;
-    --card-face-border: #3a3630;
-    --card-stroke: #2B2926;
-    --card-back-bg: #1a3a8a;
+    /* Blackjack aliases consume the active shared skin pack. */
+    --surface-table: var(--game-table-bg);
+    --surface-table-felt: var(--game-table-felt);
+    --card-face-bg: var(--playing-card-face);
+    --card-face-border: var(--playing-card-border);
+    --card-stroke: var(--playing-card-stroke);
+    --card-back-bg: var(--playing-card-back);
+    --card-back-border: var(--playing-card-back-border);
+    --card-red: var(--playing-card-red);
+    --card-black: var(--playing-card-black);
+    --chip-red: var(--chip-5-bg);
+    --chip-blue: var(--chip-100-bg);
+    --chip-green: var(--chip-25-bg);
+    --chip-black: var(--chip-100-bg);
+    --chip-gold: var(--chip-500-bg);
   }
 
   body {
@@ -78,9 +71,11 @@
 @layer components {
   .bj-game-root {
     background:
-      radial-gradient(circle at 50% -18%, rgba(68, 196, 132, 0.26), transparent 36%),
-      radial-gradient(circle at 8% 90%, rgba(196, 160, 64, 0.16), transparent 30%),
-      linear-gradient(180deg, #123a2b 0%, #0b241b 100%) !important;
+      radial-gradient(circle at 50% -18%, var(--game-table-glow), transparent 36%),
+      radial-gradient(circle at 8% 90%, color-mix(in srgb, var(--accent-warm) 22%, transparent), transparent 30%),
+      var(--game-table-bg) !important;
+    color: var(--game-on-table-text);
+    text-shadow: var(--game-text-outline-shadow);
   }
 
   .bj-topbar,
@@ -105,9 +100,9 @@
     inset: clamp(0.5rem, 2vw, 1.35rem);
     border-radius: clamp(22px, 4vw, 56px);
     background:
-      radial-gradient(ellipse at center, rgba(44, 143, 83, 0.52), rgba(17, 74, 45, 0.68) 58%, rgba(8, 32, 23, 0.9)),
-      linear-gradient(145deg, rgba(255,255,255,0.10), rgba(0,0,0,0.18));
-    border: 1px solid rgba(255,255,255,0.14);
+      radial-gradient(ellipse at center, var(--game-table-glow), transparent 52%),
+      var(--game-table-felt);
+    border: 1px solid var(--game-panel-border);
     box-shadow: inset 0 0 0 2px rgba(255,255,255,0.04), inset 0 0 56px rgba(0,0,0,0.28), 0 18px 60px rgba(0,0,0,0.28);
     pointer-events: none;
   }
@@ -188,10 +183,11 @@
   .bj-bet-panel,
   .bj-action-panel,
   .bj-result-panel {
-    background: rgba(8, 24, 18, 0.72) !important;
-    border: 1px solid rgba(255,255,255,0.16) !important;
+    background: var(--game-panel-overlay) !important;
+    border: 1px solid var(--game-panel-border) !important;
     box-shadow: 0 10px 30px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.94) !important;
+    color: var(--game-on-table-text) !important;
+    text-shadow: var(--game-text-outline-shadow);
     backdrop-filter: blur(12px);
   }
 
@@ -204,7 +200,7 @@
 
   .bj-bet-panel {
     width: min(94vw, 520px);
-    background: linear-gradient(180deg, rgba(11,35,27,0.92), rgba(7,22,17,0.86)) !important;
+    background: var(--game-panel-overlay) !important;
   }
 
   .bj-action-panel,
@@ -221,7 +217,7 @@
 
   .bj-result-panel--win {
     border-color: rgba(72, 211, 126, 0.45) !important;
-    background: linear-gradient(180deg, rgba(20, 84, 50, 0.92), rgba(8, 34, 24, 0.88)) !important;
+    background: var(--game-panel-overlay) !important;
   }
 
   .bj-result-panel--lose {
@@ -238,11 +234,11 @@
   }
 
   .bj-game-root [style*="var(--text-muted)"] {
-    color: rgba(255,255,255,0.68) !important;
+    color: var(--game-on-table-muted) !important;
   }
 
   .bj-game-root [style*="var(--text-secondary)"] {
-    color: rgba(255,255,255,0.76) !important;
+    color: var(--game-on-table-muted) !important;
   }
 }
 
@@ -466,10 +462,10 @@
     box-shadow: 0 16px 30px rgba(0,0,0,0.22);
     transform: rotate(-4deg);
   }
-  .bj-preview-card--back { background: linear-gradient(135deg, #1a3a8a, #102459); transform: rotate(6deg) translateY(8px); }
+  .bj-preview-card--back { background: var(--deck-card-back); transform: rotate(6deg) translateY(8px); }
   .bj-preview-chip {
     width: 62px; height: 62px; border-radius: 999px; display: grid; place-items: center;
-    background: radial-gradient(circle at 30% 30%, #ebd18f, #c4a040 60%, #8a6d20);
+    background: radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--chip-500-bg) 62%, white), var(--chip-500-bg) 60%, var(--chip-500-border));
     color: #2b2926; font-weight: 900; box-shadow: 0 12px 26px rgba(0,0,0,0.22);
   }
 

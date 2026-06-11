@@ -6,14 +6,14 @@ interface ChipRendererProps {
   style?: React.CSSProperties;
 }
 
-const CHIP_STYLES: Record<number, { bg: string; border: string; label: string }> = {
-  1: { bg: '#ffffff', border: '#999', label: '1' },
-  5: { bg: '#c45a5a', border: '#9a3a3a', label: '5' },
-  10: { bg: '#4a7abd', border: '#3a5a8a', label: '10' },
-  25: { bg: '#5a9e6e', border: '#3a7a4e', label: '25' },
-  50: { bg: '#c4a040', border: '#9a7a30', label: '50' },
-  100: { bg: '#2c2c30', border: '#1a1a1d', label: '100' },
-  500: { bg: '#7a3a8a', border: '#5a2a6a', label: '500' },
+const CHIP_STYLES: Record<number, { bg: string; border: string; label: string; text: string }> = {
+  1: { bg: 'var(--chip-1-bg)', border: 'var(--chip-1-border)', text: 'var(--chip-1-text)', label: '1' },
+  5: { bg: 'var(--chip-5-bg)', border: 'var(--chip-5-border)', text: 'var(--chip-5-text)', label: '5' },
+  10: { bg: 'var(--chip-100-bg)', border: 'var(--chip-100-border)', text: 'var(--chip-100-text)', label: '10' },
+  25: { bg: 'var(--chip-25-bg)', border: 'var(--chip-25-border)', text: 'var(--chip-25-text)', label: '25' },
+  50: { bg: 'var(--chip-500-bg)', border: 'var(--chip-500-border)', text: 'var(--chip-500-text)', label: '50' },
+  100: { bg: 'var(--chip-100-bg)', border: 'var(--chip-100-border)', text: 'var(--chip-100-text)', label: '100' },
+  500: { bg: 'var(--chip-500-bg)', border: 'var(--chip-500-border)', text: 'var(--chip-500-text)', label: '500' },
 };
 
 function getChipStyle(value: number) {
@@ -43,7 +43,8 @@ export function ChipRenderer({ value, size = 'md', style }: ChipRendererProps) {
         justifyContent: 'center',
         fontSize: size === 'sm' ? '0.625rem' : '0.75rem',
         fontWeight: 700,
-        color: value >= 100 ? '#fff' : '#2B2926',
+        color: chip.text,
+        textShadow: 'var(--game-text-outline-shadow)',
         fontFamily: "'Inter', sans-serif",
         boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
         flexShrink: 0,
