@@ -61,6 +61,7 @@ export function CardRenderer({ suit, rank, faceDown = false, size = 'md', style 
 
   const symbol = SUIT_SYMBOLS[suit] || '?';
   const color = SUIT_COLORS[suit] || 'var(--playing-card-black)';
+  const textShadow = 'var(--playing-card-text-outline-shadow)';
 
   return (
     <div
@@ -92,11 +93,13 @@ export function CardRenderer({ suit, rank, faceDown = false, size = 'md', style 
           fontSize: rankSize,
           fontWeight: 700,
           color,
+          textShadow,
           fontFamily: "'Inter', sans-serif",
         }}>{rank}</span>
         <span style={{
           fontSize: suitSize,
           color,
+          textShadow,
           lineHeight: 1,
         }}>{symbol}</span>
       </div>
@@ -109,6 +112,7 @@ export function CardRenderer({ suit, rank, faceDown = false, size = 'md', style 
         transform: 'translate(-50%, -50%)',
         fontSize: centerSuit,
         color,
+        textShadow,
         lineHeight: 1,
       }}>
         {symbol}
@@ -130,11 +134,13 @@ export function CardRenderer({ suit, rank, faceDown = false, size = 'md', style 
           fontSize: rankSize,
           fontWeight: 700,
           color,
+          textShadow,
           fontFamily: "'Inter', sans-serif",
         }}>{rank}</span>
         <span style={{
           fontSize: suitSize,
           color,
+          textShadow,
           lineHeight: 1,
         }}>{symbol}</span>
       </div>
